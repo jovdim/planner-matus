@@ -1001,6 +1001,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showExport, showImport, showShareLink, showStyleQuiz, undoStack]);
 
   const escapeHtml = (str) => {
