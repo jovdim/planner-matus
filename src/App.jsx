@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
-import { Check, Plus, Trash2, Calendar, Wallet, Users, Armchair, Home, ChevronRight, ChevronLeft, Download, Upload, Heart, X, Edit2, ChevronDown, Circle, Square, Baby, User, UtensilsCrossed, AlertCircle, Music, Martini, DoorOpen, LogOut, Cake, Camera, Flower2, Candy, Lightbulb, UtensilsCrossed as Buffet, Layers, Move, RotateCw, Maximize2, FileText, FileSpreadsheet, Search, Copy, Moon, Sun, Mail, Clock, BookOpen, FileCheck, Share2, Undo2, Sparkles as SparklesIcon, ArrowRight, ImageIcon, MessageCircle } from 'lucide-react';
+import { Check, Plus, Trash2, Calendar, Wallet, Users, Armchair, Home, ChevronRight, ChevronLeft, Download, Upload, Heart, X, Edit2, ChevronDown, Circle, Square, Baby, User, UtensilsCrossed, AlertCircle, Music, Martini, DoorOpen, LogOut, Cake, Camera, Flower2, Candy, Lightbulb, UtensilsCrossed as Buffet, Layers, Move, RotateCw, Maximize2, FileText, FileSpreadsheet, Search, Copy, Moon, Sun, Mail, Phone, Clock, BookOpen, FileCheck, Share2, Undo2, Sparkles as SparklesIcon, ArrowRight, ImageIcon, MessageCircle } from 'lucide-react';
 
 export default function App() {
   const [activeModule, setActiveModule] = useState('home');
@@ -530,16 +530,17 @@ export default function App() {
 
   const [budgetTotal, setBudgetTotal] = useState(0);
   const [expenses, setExpenses] = useState([
-    { id: 1, category: 'Miesto a catering', planned: 0, spent: 0 },
-    { id: 2, category: 'Svadobné šaty a oblek', planned: 0, spent: 0 },
-    { id: 3, category: 'Fotograf a kameraman', planned: 0, spent: 0 },
-    { id: 4, category: 'Hudba a zábava', planned: 0, spent: 0 },
-    { id: 5, category: 'Kvety a výzdoba', planned: 0, spent: 0 },
-    { id: 6, category: 'Snubné prstene', planned: 0, spent: 0 },
-    { id: 7, category: 'Torta a sladkosti', planned: 0, spent: 0 },
-    { id: 8, category: 'Oznámenia a pozvánky', planned: 0, spent: 0 },
+    { id: 1, category: 'Miesto a catering', planned: 0, spent: 0, vendor: '', phone: '', email: '' },
+    { id: 2, category: 'Svadobné šaty a oblek', planned: 0, spent: 0, vendor: '', phone: '', email: '' },
+    { id: 3, category: 'Fotograf a kameraman', planned: 0, spent: 0, vendor: '', phone: '', email: '' },
+    { id: 4, category: 'Hudba a zábava', planned: 0, spent: 0, vendor: '', phone: '', email: '' },
+    { id: 5, category: 'Kvety a výzdoba', planned: 0, spent: 0, vendor: '', phone: '', email: '' },
+    { id: 6, category: 'Snubné prstene', planned: 0, spent: 0, vendor: '', phone: '', email: '' },
+    { id: 7, category: 'Torta a sladkosti', planned: 0, spent: 0, vendor: '', phone: '', email: '' },
+    { id: 8, category: 'Oznámenia a pozvánky', planned: 0, spent: 0, vendor: '', phone: '', email: '' },
   ]);
-  const [newExpense, setNewExpense] = useState({ category: '', planned: '', spent: '' });
+  const [newExpense, setNewExpense] = useState({ category: '', planned: '', spent: '', vendor: '', phone: '', email: '' });
+  const [expandedExpenses, setExpandedExpenses] = useState({}); // { [expenseId]: true/false }
 
   const emptyGuest = { name: '', side: 'Nevesta', rsvp: 'Čaká sa', type: 'Dospelý', meal: 'Celá porcia', highChair: false, allergies: '' };
   const [guests, setGuests] = useState([]);
@@ -615,10 +616,21 @@ export default function App() {
 
   const addExpense = () => {
     if (!newExpense.category.trim()) return;
-    setExpenses([...expenses, { id: Date.now(), category: newExpense.category, planned: Number(newExpense.planned) || 0, spent: Number(newExpense.spent) || 0 }]);
-    setNewExpense({ category: '', planned: '', spent: '' });
+    setExpenses([...expenses, {
+      id: Date.now(),
+      category: newExpense.category,
+      planned: Number(newExpense.planned) || 0,
+      spent: Number(newExpense.spent) || 0,
+      vendor: newExpense.vendor || '',
+      phone: newExpense.phone || '',
+      email: newExpense.email || '',
+    }]);
+    setNewExpense({ category: '', planned: '', spent: '', vendor: '', phone: '', email: '' });
   };
-  const updateExpense = (id, field, value) => setExpenses(expenses.map(e => e.id === id ? { ...e, [field]: field === 'category' ? value : Number(value) || 0 } : e));
+  const updateExpense = (id, field, value) => setExpenses(expenses.map(e => e.id === id ? {
+    ...e,
+    [field]: (field === 'category' || field === 'vendor' || field === 'phone' || field === 'email') ? value : Number(value) || 0
+  } : e));
   const removeExpense = (id) => {
     const expense = expenses.find(e => e.id === id);
     if (!expense) return;
@@ -972,17 +984,17 @@ export default function App() {
       XLSX.utils.book_append_sheet(wb, ws2, 'Úlohy');
 
       // === Sheet 3: Rozpočet ===
-      const budgetData = [['Kategória', 'Naplánované (€)', 'Minuté (€)', 'Zostatok (€)', 'Využitie (%)']];
+      const budgetData = [['Kategória', 'Naplánované (€)', 'Minuté (€)', 'Zostatok (€)', 'Využitie (%)', 'Dodávateľ', 'Telefón', 'Email']];
       expenses.forEach(e => {
         const remaining = e.planned - e.spent;
         const pct = e.planned ? Math.round((e.spent / e.planned) * 100) : 0;
-        budgetData.push([e.category, e.planned, e.spent, remaining, `${pct}%`]);
+        budgetData.push([e.category, e.planned, e.spent, remaining, `${pct}%`, e.vendor || '', e.phone || '', e.email || '']);
       });
       budgetData.push([]);
       budgetData.push(['CELKOM', totalPlanned, totalSpent, budgetTotal - totalSpent, `${budgetTotal ? Math.round((totalSpent / budgetTotal) * 100) : 0}%`]);
       budgetData.push(['Celkový rozpočet', budgetTotal]);
       const ws3 = XLSX.utils.aoa_to_sheet(budgetData);
-      ws3['!cols'] = [{ wch: 30 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 14 }];
+      ws3['!cols'] = [{ wch: 30 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 28 }, { wch: 18 }, { wch: 28 }];
       XLSX.utils.book_append_sheet(wb, ws3, 'Rozpočet');
 
       // === Sheet 4: Hostia ===
@@ -1470,6 +1482,13 @@ export default function App() {
       'budget.addCategory': { sk: 'Pridať kategóriu', en: 'Add category' },
       'budget.notPlanned': { sk: 'Nenaplánované', en: 'Not planned yet' },
       'budget.placeholderCat': { sk: 'Napr. Fotokútik', en: 'e.g. Photobooth' },
+      'budget.vendor': { sk: 'Dodávateľ', en: 'Vendor' },
+      'budget.vendorPlaceholder': { sk: 'Meno / názov firmy', en: 'Name / company name' },
+      'budget.phone': { sk: 'Telefón', en: 'Phone' },
+      'budget.email': { sk: 'Email', en: 'Email' },
+      'budget.contacts': { sk: 'Kontakty dodávateľa', en: 'Vendor contacts' },
+      'budget.showContacts': { sk: 'Zobraziť kontakty', en: 'Show contacts' },
+      'budget.hideContacts': { sk: 'Skryť kontakty', en: 'Hide contacts' },
 
       // Checklist
       'checklist.subtitle': { sk: 'Cesta k vášmu veľkému dňu', en: 'The path to your big day' },
@@ -2522,13 +2541,6 @@ export default function App() {
               <h2 className="serif text-3xl md:text-4xl font-normal" style={{ color: '#1E1910' }}>
                 {t('hero.tools')}
               </h2>
-              {/* Templates CTA */}
-              <button
-                onClick={() => { setShowTemplates(true); track('templates_opened'); }}
-                className="mt-4 inline-flex items-center gap-2 text-[10px] tracking-[0.25em] uppercase gold hover:opacity-70 border hairline rounded-full px-5 py-2 transition"
-              >
-                <SparklesIcon size={12} /> {t('templates.cta')}
-              </button>
               {/* Urgent tasks indicator */}
               {urgentTasks.length > 0 && (
                 <button
@@ -2898,13 +2910,87 @@ export default function App() {
                   <div className="h-1 bg-gray-100 rounded-full overflow-hidden mb-1.5">
                     <div className="progress-bar h-full rounded-full" style={{ width: `${Math.min(100, pct)}%`, backgroundColor: isOver ? '#DC2626' : '#9B7A45' }} />
                   </div>
-                  <p className="text-[10px]" style={{ color: isOver ? '#DC2626' : '#6B5946' }}>
+                  <p className="text-[10px] mb-2" style={{ color: isOver ? '#DC2626' : '#6B5946' }}>
                     {e.planned === 0 ? (lang === 'en' ? 'Not planned yet' : 'Nenaplánované') :
                      remaining >= 0
                       ? (lang === 'en' ? `${remaining.toLocaleString('en-US')} € left` : `Zostáva ${remaining.toLocaleString('sk-SK')} €`)
                       : (lang === 'en' ? `Over by ${Math.abs(remaining).toLocaleString('en-US')} €` : `Prekročené o ${Math.abs(remaining).toLocaleString('sk-SK')} €`)
                     }
                   </p>
+
+                  {/* Vendor summary (ak je vyplnené) */}
+                  {(e.vendor || e.phone || e.email) && !expandedExpenses[e.id] && (
+                    <div className="pt-2 border-t hairline mb-2">
+                      {e.vendor && <p className="text-[11px] font-medium truncate" style={{ color: '#1E1910' }}>{e.vendor}</p>}
+                      <div className="flex gap-2 mt-0.5">
+                        {e.phone && (
+                          <a href={`tel:${e.phone}`} onClick={(ev) => ev.stopPropagation()} className="text-[10px] gold hover:opacity-70 flex items-center gap-1 truncate">
+                            <Phone size={9} /> {e.phone}
+                          </a>
+                        )}
+                        {e.email && (
+                          <a href={`mailto:${e.email}`} onClick={(ev) => ev.stopPropagation()} className="text-[10px] gold hover:opacity-70 flex items-center gap-1 truncate">
+                            <Mail size={9} />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Toggle contacts */}
+                  <button
+                    onClick={() => setExpandedExpenses(prev => ({ ...prev, [e.id]: !prev[e.id] }))}
+                    className="w-full flex items-center justify-center gap-1 text-[9px] tracking-[0.15em] uppercase gold hover:opacity-70 py-1 border-t hairline"
+                  >
+                    <User size={9} />
+                    {expandedExpenses[e.id]
+                      ? t('budget.hideContacts')
+                      : (e.vendor || e.phone || e.email ? t('budget.showContacts') : (lang === 'en' ? '+ Add contact' : '+ Pridať kontakt'))}
+                    <ChevronDown size={9} className={`transition-transform ${expandedExpenses[e.id] ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Expandable contact fields */}
+                  {expandedExpenses[e.id] && (
+                    <div className="mt-2 pt-2 border-t hairline space-y-2 fade-in">
+                      <div>
+                        <label className="text-[9px] tracking-[0.15em] uppercase gold block mb-0.5">{t('budget.vendor')}</label>
+                        <input
+                          type="text"
+                          value={e.vendor || ''}
+                          onChange={(ev) => updateExpense(e.id, 'vendor', ev.target.value)}
+                          placeholder={t('budget.vendorPlaceholder')}
+                          className="w-full bg-transparent border-b hairline py-0.5 text-xs"
+                          style={{ color: '#1E1910' }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] tracking-[0.15em] uppercase gold block mb-0.5 flex items-center gap-1">
+                          <Phone size={9} /> {t('budget.phone')}
+                        </label>
+                        <input
+                          type="tel"
+                          value={e.phone || ''}
+                          onChange={(ev) => updateExpense(e.id, 'phone', ev.target.value)}
+                          placeholder="+421 ..."
+                          className="w-full bg-transparent border-b hairline py-0.5 text-xs"
+                          style={{ color: '#1E1910' }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] tracking-[0.15em] uppercase gold block mb-0.5 flex items-center gap-1">
+                          <Mail size={9} /> {t('budget.email')}
+                        </label>
+                        <input
+                          type="email"
+                          value={e.email || ''}
+                          onChange={(ev) => updateExpense(e.id, 'email', ev.target.value)}
+                          placeholder="info@example.com"
+                          className="w-full bg-transparent border-b hairline py-0.5 text-xs"
+                          style={{ color: '#1E1910' }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -3824,7 +3910,7 @@ export default function App() {
 }
 
 /* ============ SEATING MODULE ============ */
-function SeatingModule({ guests, tables, newTable, setNewTable, addTable, removeTable, updateTablePosition, assignGuestToTable, unassignGuest, unassignedGuests, getInitials, sceneElements, addSceneElement, removeSceneElement, updateScenePosition, updateSceneScale, updateSceneRotation, seatingView, setSeatingView, setActiveModule, lang, t, tr }) {
+function SeatingModule({ guests, tables, newTable, setNewTable, addTable, removeTable, updateTablePosition, assignGuestToTable, unassignGuest, unassignedGuests, getInitials, sceneElements, addSceneElement, removeSceneElement, updateScenePosition, updateSceneScale, updateSceneRotation, seatingView, setSeatingView, setActiveModule, lang = 'sk', t = (k) => k, tr = (x) => x }) {
   const canvasRef = useRef(null);
   const [dragState, setDragState] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
@@ -4269,7 +4355,7 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
 }
 
 /* ============ FIXED-POSITIONED DROPDOWN (uses viewport coords, renders via portal) ============ */
-function TableAssignSelect({ tables, onAssign, lang, t }) {
+function TableAssignSelect({ tables, onAssign, lang = 'sk', t = (k) => k }) {
   const [open, setOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0, direction: 'down' });
   const triggerRef = useRef(null);
@@ -4698,15 +4784,15 @@ function StyleQuizModal({ onClose, lang = 'sk' }) {
     const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
     if (!top) return null;
     const styles = lang === 'en' ? {
-      classic: { name: 'Classic Elegance', desc: 'You are a woman with timeless taste. You feel best in classical, well-cut dresses with a crown and long veil.', dress: 'A-line, princess or corset dresses with a full skirt' },
-      boho: { name: 'Bohemian Romance', desc: 'You are a dreamy, romantic soul. You love natural materials, lace and looser silhouettes.', dress: 'Lace dresses, looser silhouettes with sleeves, rustic details' },
-      minimal: { name: 'Modern Minimalism', desc: 'You appreciate clean lines and deliberately modest elegance. Less is more.', dress: 'Smooth satin dresses, simple cut, without unnecessary details' },
-      rustic: { name: 'Rustic Warmth', desc: 'You are a woman who values family values and a warm, homey impression.', dress: 'Classic A-line with rustic details — ribbons, patterns, natural lace' },
+      classic: { name: 'Classic Elegance', desc: 'You are a woman with timeless taste. You feel best in classical, well-cut dresses with a crown and long veil.', dress: 'A-line, princess or corset dresses with a full skirt', collectionName: 'Midnight', collectionUrl: 'https://www.janveil.sk/kolekcia-midnight/' },
+      boho: { name: 'Bohemian Romance', desc: 'You are a dreamy, romantic soul. You love natural materials, lace and looser silhouettes.', dress: 'Lace dresses, looser silhouettes with sleeves, rustic details', collectionName: 'True Romance', collectionUrl: 'https://www.janveil.sk/kolekcia-true-romance/' },
+      minimal: { name: 'Modern Minimalism', desc: 'You appreciate clean lines and deliberately modest elegance. Less is more.', dress: 'Smooth satin dresses, simple cut, without unnecessary details', collectionName: 'Pure Elegance', collectionUrl: 'https://www.janveil.sk/kolekcia-pure-elegance/' },
+      rustic: { name: 'Rustic Warmth', desc: 'You are a woman who values family values and a warm, homey impression.', dress: 'Classic A-line with rustic details — ribbons, patterns, natural lace', collectionName: 'True Romance', collectionUrl: 'https://www.janveil.sk/kolekcia-true-romance/' },
     } : {
-      classic: { name: 'Klasická elegancia', desc: 'Ste žena s nadčasovým vkusom. Cítite sa najlepšie v klasických, dobre strihnutých šatách s korunkou a dlhým závojom.', dress: 'A-línia, princeznovské alebo korzetové šaty s bohatou sukňou' },
-      boho: { name: 'Bohémska romantika', desc: 'Ste snová, romantická duša. Milujete prírodné materiály, čipku a voľnejšie siluety.', dress: 'Čipkované šaty, voľnejšie siluety s rukávmi, rustikálne detaily' },
-      minimal: { name: 'Moderný minimalizmus', desc: 'Oceníte čisté línie a zámerne skromnú eleganciu. Menej je viac.', dress: 'Hladké saténové šaty, jednoduchý strih, bez prebytočných detailov' },
-      rustic: { name: 'Rustikálna pohoda', desc: 'Ste žena, ktorá si cení rodinné hodnoty a teplý, domácky dojem.', dress: 'Klasická A-línia s rustikálnymi detailmi — stuhy, vzory, prírodné čipky' },
+      classic: { name: 'Klasická elegancia', desc: 'Ste žena s nadčasovým vkusom. Cítite sa najlepšie v klasických, dobre strihnutých šatách s korunkou a dlhým závojom.', dress: 'A-línia, princeznovské alebo korzetové šaty s bohatou sukňou', collectionName: 'Midnight', collectionUrl: 'https://www.janveil.sk/kolekcia-midnight/' },
+      boho: { name: 'Bohémska romantika', desc: 'Ste snová, romantická duša. Milujete prírodné materiály, čipku a voľnejšie siluety.', dress: 'Čipkované šaty, voľnejšie siluety s rukávmi, rustikálne detaily', collectionName: 'True Romance', collectionUrl: 'https://www.janveil.sk/kolekcia-true-romance/' },
+      minimal: { name: 'Moderný minimalizmus', desc: 'Oceníte čisté línie a zámerne skromnú eleganciu. Menej je viac.', dress: 'Hladké saténové šaty, jednoduchý strih, bez prebytočných detailov', collectionName: 'Pure Elegance', collectionUrl: 'https://www.janveil.sk/kolekcia-pure-elegance/' },
+      rustic: { name: 'Rustikálna pohoda', desc: 'Ste žena, ktorá si cení rodinné hodnoty a teplý, domácky dojem.', dress: 'Klasická A-línia s rustikálnymi detailmi — stuhy, vzory, prírodné čipky', collectionName: 'True Romance', collectionUrl: 'https://www.janveil.sk/kolekcia-true-romance/' },
     };
     return styles[top[0]];
   })();
@@ -4769,19 +4855,38 @@ function StyleQuizModal({ onClose, lang = 'sk' }) {
             </p>
             <div className="bg-gradient-to-br from-[#F5EFE3] to-[#EBE1CF] rounded-card p-6 mb-6">
               <p className="text-[10px] tracking-[0.25em] uppercase gold mb-2">{lang === "en" ? "We recommend" : "Odporúčame vám"}</p>
-              <p className="serif italic text-lg" style={{ color: '#1E1910' }}>{result?.dress}</p>
+              <p className="serif italic text-lg mb-4" style={{ color: '#1E1910' }}>{result?.dress}</p>
+
+              {/* Link na konkrétnu kolekciu */}
+              {result?.collectionUrl && (
+                <div className="pt-4 border-t hairline">
+                  <p className="text-[10px] tracking-[0.25em] uppercase gold mb-2">{lang === 'en' ? 'Matching collection' : 'Vaša kolekcia'}</p>
+                  <p className="serif text-2xl italic mb-3" style={{ color: '#9B7A45' }}>{result.collectionName}</p>
+                  <a
+                    href={result.collectionUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => { if (typeof window.trackEvent === 'function') window.trackEvent('quiz_collection_clicked', { collection: result.collectionName }); }}
+                    className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase gold hover:opacity-70 transition"
+                  >
+                    {lang === 'en' ? `Browse ${result.collectionName} collection` : `Pozrieť kolekciu ${result.collectionName}`} <ChevronRight size={12} />
+                  </a>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 justify-center flex-wrap">
               <a
-                href="https://www.janveil.sk/svadobne-saty/"
+                href={result?.collectionUrl || "https://www.janveil.sk/svadobne-saty/"}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => { if (typeof window.trackEvent === 'function') window.trackEvent('quiz_cta_collection', { collection: result?.collectionName || 'all' }); }}
                 className="bg-gold text-white px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:opacity-90 transition flex items-center gap-2"
               >
-                <ImageIcon size={14} /> {lang === "en" ? "View collection" : "Pozrieť kolekciu"}
+                <ImageIcon size={14} /> {lang === "en" ? `View ${result?.collectionName || 'collection'}` : `Pozrieť ${result?.collectionName || 'kolekciu'}`}
               </a>
               <a href="https://www.janveil.sk/skuska-svadobnych-siat/#termin" target="_blank" rel="noopener noreferrer"
+                onClick={() => { if (typeof window.trackEvent === 'function') window.trackEvent('quiz_cta_fitting'); }}
                 className="border border-gold gold px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition">
                 {lang === "en" ? "Book fitting" : "Objednať skúšku"}
               </a>

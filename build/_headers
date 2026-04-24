@@ -3,5 +3,5 @@
   X-Frame-Options: SAMEORIGIN
   Referrer-Policy: strict-origin-when-cross-origin
 
-/static/*
+/planovac/static/*
   Cache-Control: public, max-age=31536000, immutable
