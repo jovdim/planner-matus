@@ -9,7 +9,278 @@ export default function App() {
 
   // === NOVÉ STATE v1.1 ===
   const [theme, setTheme] = useState('light'); // 'light' | 'dark'
+
+  // === ANALYTICS HELPER ===
+  const track = (eventName, params) => {
+    if (typeof window !== 'undefined' && typeof window.trackEvent === 'function') {
+      window.trackEvent(eventName, params || {});
+    }
+  };
   const [diary, setDiary] = useState(''); // denník/poznámky nevesty
+
+  // === AUTO-SAVE ===
+  // eslint-disable-next-line no-unused-vars
+  const [lastSaved, setLastSaved] = useState(null); // timestamp posledného uloženia
+  const [showSavedIndicator, setShowSavedIndicator] = useState(false);
+
+  // === JAZYK (SK / EN) ===
+  const [lang, setLang] = useState('sk');
+
+  // === ŠABLÓNY ===
+  const [showTemplates, setShowTemplates] = useState(false);
+
+  // === KONFETY ===
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  // === FAQ STATE ===
+  const [openFaq, setOpenFaq] = useState(null);
+  const faqCategories = lang === 'en' ? [
+    {
+      title: 'About JanVeil Salon',
+      items: [
+        {
+          q: 'Where is the JanVeil salon located?',
+          a: 'Our bridal salon is located in Zlaté Moravce, Slovakia, at Hviezdoslavova 2106/41, in the TeKOV Shopping Center, 1st floor. Turn right at the elevator. Parking in front of OD TeKOV is free for the first 2 hours.',
+        },
+        {
+          q: 'What are the opening hours?',
+          a: 'The salon is open by appointment only, Monday to Saturday. This way you can feel private and do not have to share attention with other brides. Book your fitting by calling +421 944 943 390 or through the online form.',
+        },
+        {
+          q: 'What kind of dresses do you offer?',
+          a: 'We offer wedding dresses from European designers as well as our own JanVeil collection. You will find classic corset dresses, A-line, princess dresses with full skirts, mermaids, bohemian lace and minimalist models. 90% of lace and appliqués are hand-sewn.',
+        },
+      ],
+    },
+    {
+      title: 'Dress Fitting',
+      items: [
+        {
+          q: 'How does the fitting work?',
+          a: 'The fitting usually takes one hour and takes place in the private environment of the salon — just you and your companion. We welcome you, talk about your ideas, wedding style and figure. Then we select several models for you to try. Kvetka, the owner, will advise you on each piece.',
+        },
+        {
+          q: 'Is the fitting paid?',
+          a: 'Yes, the fitting is charged a fee of 30 €. If you reserve or buy a dress at the fitting, we do not charge you this fee — it is deducted from the price of the dress.',
+        },
+        {
+          q: 'How many people can I bring to the fitting?',
+          a: 'We recommend a maximum of 2-3 people (e.g. mother, sister, best friend). Too many opinions can be confusing. Some brides come alone — that is perfectly fine.',
+        },
+        {
+          q: 'When is the best time to book a fitting?',
+          a: 'Ideally 6-12 months before the wedding. This period gives you enough time to choose, make custom alterations and fine-tune details. But do not despair even in case of the last months — we have managed custom dresses in one month when needed.',
+        },
+        {
+          q: 'What should I bring to the fitting?',
+          a: 'Light underwear (preferably nude/flesh color), shoes with heels similar to those you plan for the wedding (if you have them), and above all a good mood. We recommend lighter make-up so it does not stain light fabrics.',
+        },
+      ],
+    },
+    {
+      title: 'Rental and Purchase',
+      items: [
+        {
+          q: 'Is it better to buy or rent a dress?',
+          a: 'It depends on you. If you want to keep the dress as a memory, or plan to wear it on other occasions (professional photo shoot, anniversary), buying makes sense. If it is just one day, renting is cheaper. You can both buy and rent at our salon.',
+        },
+        {
+          q: 'What are the prices?',
+          a: 'Dress rental: 500 – 800 €. Sale prices: 900 – 1500 €. Rental price includes professional cleaning after the wedding, veil, petticoat and all custom tailoring alterations. Sale models from 400 €.',
+        },
+        {
+          q: 'Are custom alterations included in the price?',
+          a: 'Yes — all common alterations (shortening, narrowing, corset adjustment) are included. They are done by our experienced seamstress Beatka right in our studio. This way the dress fits down to the millimeter.',
+        },
+        {
+          q: 'Can I have a custom-made dress?',
+          a: 'Yes, we also sew our own JanVeil collection directly in our studio. We can create a version of our models specifically for you. We can do it in one or two months if needed.',
+        },
+      ],
+    },
+    {
+      title: 'Reservation and Timing',
+      items: [
+        {
+          q: 'How can I reserve a dress?',
+          a: 'After the fitting, if you choose your dress, you pay a deposit. The dress is reserved for you and no one else can have it on your wedding date. We then arrange a date for the final fitting for alterations.',
+        },
+        {
+          q: 'What is the usual deposit?',
+          a: 'Usually 30-50% of the price. We will tell you the exact conditions at the fitting based on the specific model.',
+        },
+        {
+          q: 'How many fittings and alterations are common?',
+          a: 'Usually 2-3 fittings are enough: first fitting (selection and reservation), second fitting (first alteration after tailoring work), third/final fitting (perfect tuning 1-2 weeks before the wedding).',
+        },
+      ],
+    },
+    {
+      title: 'Practical Tips',
+      items: [
+        {
+          q: 'When to choose a veil?',
+          a: 'The veil is included in the rental price. If you are buying the dress, the veil is chosen at the time of dress reservation — to perfectly match the style of the dress.',
+        },
+        {
+          q: 'When to buy shoes?',
+          a: 'Ideally before the first alteration fitting — the seamstress needs the exact heel height for the dress to fit optimally. If you do not have shoes yet, tell us the estimated heel height.',
+        },
+        {
+          q: 'How to care for the dress before the wedding?',
+          a: 'If you have the dress rented, you bring it back to the salon after the wedding — cleaning is on us. If you bought the dress, we recommend professional dry cleaning and then storage in a special protective bag in a dark, dry place.',
+        },
+        {
+          q: 'Do I have a plan B if something goes wrong at the last minute?',
+          a: 'At our salon, Kvetka and Beatka can solve even impossible situations at the last minute. Several brides have confirmed that we finished their dresses in a month when needed. Do not worry — we are always available, even outside regular business hours.',
+        },
+      ],
+    },
+    {
+      title: 'About the Wedding Planner',
+      items: [
+        {
+          q: 'Is the planner free?',
+          a: 'Yes, the planner is completely free. No registration or email required. It is our gift to all brides planning their wedding.',
+        },
+        {
+          q: 'Is my data safe?',
+          a: 'All your data (tasks, budget, guests) remains only in your browser. Nothing is sent to the server, nothing is stored. For backup, you can use the "Export" button — you download a file that stays on your computer.',
+        },
+        {
+          q: 'How to share the planner with my partner?',
+          a: 'In the header or sidebar there is a "Share" button. It creates a special link that contains all your data. Send it to your partner and they will see exactly the same as you.',
+        },
+        {
+          q: 'What if I delete data by mistake?',
+          a: 'In the bottom right corner there will be a notification "Task deleted — Undo". Click it and the data will be restored. Alternatively, you can use the keyboard shortcut Ctrl+Z (Cmd+Z on Mac).',
+        },
+      ],
+    },
+  ] : [
+    {
+      title: 'O salóne JanVeil',
+      items: [
+        {
+          q: 'Kde sa nachádza salón JanVeil?',
+          a: 'Náš svadobný salón nájdete v Zlatých Moravciach na adrese Hviezdoslavova 2106/41, v Obchodnom dome TeKOV, 1. poschodie. Pri výťahu zabočte napravo. Parkovanie pred OD TeKOV je prvé 2 hodiny zdarma.',
+        },
+        {
+          q: 'Aké sú otváracie hodiny?',
+          a: 'Salón je otvorený výhradne na objednávky, od pondelka do soboty. Práve preto sa môžete v salóne cítiť súkromne a nemusíte sa deliť o pozornosť s inými nevestami. Na skúšku sa objednajte telefonicky na +421 944 943 390 alebo cez online formulár.',
+        },
+        {
+          q: 'Aký druh šiat ponúkate?',
+          a: 'Ponúkame svadobné šaty od európskych návrhárov aj z vlastnej kolekcie značky JanVeil. Nájdete u nás klasické korzetové šaty, A-línie, princeznovské šaty s bohatou sukňou, morské panny, bohémske čipkované aj minimalistické modely. 90% čipiek a aplikácií je ručne našívaných.',
+        },
+      ],
+    },
+    {
+      title: 'Skúška šiat',
+      items: [
+        {
+          q: 'Ako prebieha skúška šiat?',
+          a: 'Skúška trvá zvyčajne jednu hodinu a prebieha v súkromnom prostredí salónu — iba vy a vaša sprievod. Privítame vás, porozprávame sa o vašich predstavách, štýle svadby a postave. Potom vám vyberieme niekoľko modelov na vyskúšanie. Kvetka, majiteľka, vám s každým kúskom poradí.',
+        },
+        {
+          q: 'Je skúška spoplatnená?',
+          a: 'Áno, skúška je spoplatnená poplatkom 30 €. V prípade ak si šaty u nás na skúške zarezervujete alebo kúpite, poplatok vám neúčtujeme — odpočíta sa z ceny šiat.',
+        },
+        {
+          q: 'Koľko ľudí môžem zobrať na skúšku?',
+          a: 'Odporúčame maximálne 2-3 osoby (napr. mama, sestra, najlepšia kamarátka). Príliš veľa názorov môže zmiasť. Niektoré nevesty prichádzajú aj samy — je to úplne v poriadku.',
+        },
+        {
+          q: 'Kedy je najlepšie objednať sa na skúšku?',
+          a: 'Ideálne 6-12 mesiacov pred svadbou. Toto obdobie vám dáva dostatok času na výber, úpravy na mieru a prípadné doladenie detailov. Ale nezúfajte ani v prípade posledných mesiacov — v salóne zvládli aj šaty na mieru za mesiac, keď to bolo potrebné.',
+        },
+        {
+          q: 'Čo si mám priniesť na skúšku?',
+          a: 'Svetlú spodnú bielizeň (najlepšie nude/telovej farby), topánky s podobným opätkom ako plánujete na svadbu (ak ich máte), a hlavne dobrú náladu. Make-up odporúčame decentnejší, aby nezafarbila svetlé látky.',
+        },
+      ],
+    },
+    {
+      title: 'Prenájom a kúpa',
+      items: [
+        {
+          q: 'Je lepšie šaty kúpiť alebo prenajať?',
+          a: 'Záleží na vás. Ak chcete šaty uchovať ako spomienku, alebo ich plánujete nosiť pri ďalších príležitostiach (profesionálne fotenie, výročie), kúpa dáva zmysel. Ak ide iba o jeden deň, prenájom je cenovo výhodnejší. U nás šaty môžete aj kúpiť aj prenajať.',
+        },
+        {
+          q: 'Aké sú ceny?',
+          a: 'Prenájom šiat: 500 – 800 €. Predajné ceny: 900 – 1500 €. V cene prenájmu je zahrnuté profesionálne čistenie po svadbe, závoj, spodnička a všetky krajčírske úpravy na mieru. Výpredajové modely nájdete od 400 €.',
+        },
+        {
+          q: 'Sú v cene zahrnuté úpravy na mieru?',
+          a: 'Áno — všetky bežné úpravy (skrátenie, zúženie, úprava korzetu) sú v cene. Robí ich naša skúsená krajčírka Beatka priamo u nás v dielni. Vďaka tomu šaty sedia milimeter presne.',
+        },
+        {
+          q: 'Môžem si šaty nechať ušiť na mieru?',
+          a: 'Áno, šijeme aj vlastnú kolekciu JanVeil priamo v našej dielni. Z našich modelov vieme vytvoriť verziu šitú špeciálne pre vás. Stihneme to aj za mesiac-dva ak je potrebné.',
+        },
+      ],
+    },
+    {
+      title: 'Rezervácia a termíny',
+      items: [
+        {
+          q: 'Ako si môžem rezervovať šaty?',
+          a: 'Po skúške, ak si vyberiete svoje šaty, zložíte zálohu. Šaty sa pre vás zarezervujú a už ich nikto iný nemôže mať na váš termín svadby. Následne si dohodneme termín poslednej skúšky pre úpravy.',
+        },
+        {
+          q: 'Aká je zvyčajne záloha?',
+          a: 'Zvyčajne 30-50% z ceny. Presné podmienky vám povieme na skúške podľa konkrétneho modelu.',
+        },
+        {
+          q: 'Koľko skúšok a úprav je bežných?',
+          a: 'Bežne stačia 2-3 skúšky: prvá skúška (výber a rezervácia), druhá skúška (prvá úprava po krajčírskej práci), tretia/finálna skúška (dokonalé ladenie 1-2 týždne pred svadbou).',
+        },
+      ],
+    },
+    {
+      title: 'Praktické tipy',
+      items: [
+        {
+          q: 'Kedy si vybrať závoj?',
+          a: 'V cene prenájmu máte závoj zahrnutý. Ak si šaty kupujete, závoj sa vyberá pri rezervácii šiat — aby dokonale ladil so štýlom šiat.',
+        },
+        {
+          q: 'Kedy si kupovať topánky?',
+          a: 'Ideálne ešte pred prvou skúškou úprav — krajčírka potrebuje presnú výšku opätkov aby šaty sedeli optimálne. Ak ešte nemáte topánky, povedzte nám odhadovanú výšku opätku.',
+        },
+        {
+          q: 'Ako sa starať o šaty pred svadbou?',
+          a: 'Ak máte šaty prenajaté, prinesiete ich späť do salónu po svadbe — čistenie je na nás. Ak ste šaty kúpili, odporúčame profesionálne chemické čistenie a potom uloženie v speciálnom ochrannom vaku na tmavom, suchom mieste.',
+        },
+        {
+          q: 'Mám plán B ak sa niečo pokazí na poslednú chvíľu?',
+          a: 'U nás Kvetka a Beatka vedia riešiť aj nemožné situácie v poslednej chvíli. Viaceré nevesty potvrdili že sme im šaty dokončili za mesiac, keď to bolo potrebné. Nebojte sa — sme vždy k dispozícii aj mimo bežných otváracích hodín.',
+        },
+      ],
+    },
+    {
+      title: 'O svadobnom plánovači',
+      items: [
+        {
+          q: 'Je plánovač zdarma?',
+          a: 'Áno, plánovač je úplne zdarma. Nie je potrebná registrácia ani email. Je to náš darček pre všetky nevesty ktoré plánujú svadbu.',
+        },
+        {
+          q: 'Sú moje dáta v bezpečí?',
+          a: 'Všetky vaše dáta (úlohy, rozpočet, hostia) ostávajú iba vo vašom prehliadači. Nič sa neposiela na server, nič neukladáme. Pre zálohu môžete použiť tlačidlo "Exportovať" — stiahnete si súbor ktorý vám ostane na počítači.',
+        },
+        {
+          q: 'Ako zdieľať plánovač s partnerom?',
+          a: 'V hlavičke alebo v sidebari je tlačidlo "Zdieľať". Vytvorí špeciálny odkaz ktorý obsahuje všetky vaše dáta. Pošlite ho partnerovi a on uvidí presne to isté čo vy.',
+        },
+        {
+          q: 'Čo ak vymažem dáta omylom?',
+          a: 'V pravom dolnom rohu sa zobrazí notifikácia "Úloha zmazaná — Vrátiť". Stlačte ju a dáta sa obnovia. Alternatívne môžete použiť klávesovú skratku Ctrl+Z (Cmd+Z na Macu).',
+        },
+      ],
+    },
+  ];
 
   const [timeline, setTimeline] = useState([
     { id: 1, time: '08:00', event: 'Prichádza kaderníčka a vizážistka', notes: '' },
@@ -61,9 +332,16 @@ export default function App() {
   // Quiz / Style finder
   const [showStyleQuiz, setShowStyleQuiz] = useState(false);
 
+  // Mobile sidebar (hamburger menu)
+
+
   // Scroll to top when switching modules
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+    // Track: zmena sekcie
+    if (typeof window !== 'undefined' && typeof window.trackEvent === 'function') {
+      window.trackEvent('view_section', { section: activeModule });
+    }
   }, [activeModule]);
 
   // Load theme preference
@@ -293,10 +571,38 @@ export default function App() {
     setShowUndoToast(null);
   };
 
-  const toggleTask = (id) => setChecklist(checklist.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  const toggleTask = (id) => {
+    const task = checklist.find(t => t.id === id);
+    const wasCompleted = task?.done;
+    setChecklist(checklist.map(t => t.id === id ? { ...t, done: !t.done } : t));
+
+    // Konfety pri splnení (nie pri odznačení)
+    if (task && !wasCompleted) {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 2500);
+      // Tiché "puk" zvukový signál (web audio API)
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 600;
+        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.2);
+      } catch (e) {}
+      track('task_completed', { phase: task.phase });
+    }
+  };
+  const updateTaskDeadline = (id, deadline) => {
+    setChecklist(checklist.map(t => t.id === id ? { ...t, deadline } : t));
+  };
   const addTask = () => {
     if (!newTask.task.trim()) return;
-    setChecklist([...checklist, { id: Date.now(), phase: newTask.phase, task: newTask.task, done: false }]);
+    setChecklist([...checklist, { id: Date.now(), phase: newTask.phase, task: newTask.task, done: false, deadline: '' }]);
     setNewTask({ phase: newTask.phase, task: '' });
   };
   const removeTask = (id) => {
@@ -304,7 +610,7 @@ export default function App() {
     if (!task) return;
     const snapshot = [...checklist];
     setChecklist(checklist.filter(t => t.id !== id));
-    pushUndo(`Úloha "${task.task.substring(0, 40)}${task.task.length > 40 ? '…' : ''}" zmazaná`, () => setChecklist(snapshot));
+    pushUndo(lang === 'en' ? `Task "${task.task.substring(0, 40)}${task.task.length > 40 ? '…' : ''}" deleted` : `Úloha "${task.task.substring(0, 40)}${task.task.length > 40 ? '…' : ''}" zmazaná`, () => setChecklist(snapshot));
   };
 
   const addExpense = () => {
@@ -318,7 +624,7 @@ export default function App() {
     if (!expense) return;
     const snapshot = [...expenses];
     setExpenses(expenses.filter(e => e.id !== id));
-    pushUndo(`Kategória "${expense.category}" zmazaná`, () => setExpenses(snapshot));
+    pushUndo(lang === 'en' ? `Category "${expense.category}" deleted` : `Kategória "${expense.category}" zmazaná`, () => setExpenses(snapshot));
   };
 
   const addGuest = () => { if (!newGuest.name.trim()) return; setGuests([...guests, { id: Date.now(), ...newGuest }]); setNewGuest(emptyGuest); };
@@ -329,7 +635,7 @@ export default function App() {
     const tableSnap = tables.map(t => ({ ...t, seats: [...t.seats] }));
     setGuests(guests.filter(g => g.id !== id));
     setTables(tables.map(t => ({ ...t, seats: t.seats.filter(s => s !== id) })));
-    pushUndo(`Hosť "${guest.name}" zmazaný`, () => { setGuests(guestSnap); setTables(tableSnap); });
+    pushUndo(lang === 'en' ? `Guest "${guest.name}" deleted` : `Hosť "${guest.name}" zmazaný`, () => { setGuests(guestSnap); setTables(tableSnap); });
   };
 
   // === BULK ACTIONS ===
@@ -342,12 +648,12 @@ export default function App() {
   };
   const bulkRemoveGuests = () => {
     if (selectedGuests.length === 0) return;
-    if (!window.confirm(`Naozaj zmazať ${selectedGuests.length} ${selectedGuests.length === 1 ? 'hosťa' : 'hostí'}?`)) return;
+    if (!window.confirm(lang === 'en' ? `Really delete ${selectedGuests.length} guest${selectedGuests.length > 1 ? 's' : ''}?` : `Naozaj zmazať ${selectedGuests.length} ${selectedGuests.length === 1 ? 'hosťa' : 'hostí'}?`)) return;
     const guestSnap = [...guests];
     const tableSnap = tables.map(t => ({ ...t, seats: [...t.seats] }));
     setGuests(guests.filter(g => !selectedGuests.includes(g.id)));
     setTables(tables.map(t => ({ ...t, seats: t.seats.filter(s => !selectedGuests.includes(s)) })));
-    pushUndo(`${selectedGuests.length} ${selectedGuests.length === 1 ? 'hosť' : 'hostí'} zmazaných`, () => { setGuests(guestSnap); setTables(tableSnap); });
+    pushUndo(lang === 'en' ? `${selectedGuests.length} guest${selectedGuests.length > 1 ? 's' : ''} deleted` : `${selectedGuests.length} ${selectedGuests.length === 1 ? 'hosť' : 'hostí'} zmazaných`, () => { setGuests(guestSnap); setTables(tableSnap); });
     setSelectedGuests([]);
   };
   const bulkUpdateRsvp = (rsvp) => {
@@ -362,7 +668,9 @@ export default function App() {
     const available = target.capacity - target.seats.length;
     const toAssign = selectedGuests.slice(0, available);
     if (toAssign.length < selectedGuests.length) {
-      alert(`Stôl má len ${available} voľných miest. Priradím prvých ${toAssign.length} hostí.`);
+      alert(lang === 'en'
+        ? `Table has only ${available} free seats. Assigning first ${toAssign.length} guests.`
+        : `Stôl má len ${available} voľných miest. Priradím prvých ${toAssign.length} hostí.`);
     }
     setTables(tables.map(t => ({
       ...t,
@@ -405,13 +713,13 @@ export default function App() {
     if (!table) return;
     const snapshot = tables.map(t => ({ ...t, seats: [...t.seats] }));
     setTables(tables.filter(t => t.id !== id));
-    pushUndo(`Stôl "${table.name}" zmazaný`, () => setTables(snapshot));
+    pushUndo(lang === 'en' ? `Table "${table.name}" deleted` : `Stôl "${table.name}" zmazaný`, () => setTables(snapshot));
   };
   const updateTablePosition = (id, x, y) => setTables(tables.map(t => t.id === id ? { ...t, x, y } : t));
 
   const assignGuestToTable = (guestId, tableId) => {
     const target = tables.find(t => t.id === tableId);
-    if (target && target.seats.length >= target.capacity) { alert('Stôl je plný. Zvýšte kapacitu alebo zvoľte iný stôl.'); return; }
+    if (target && target.seats.length >= target.capacity) { alert(lang === 'en' ? 'Table is full. Increase capacity or choose another table.' : 'Stôl je plný. Zvýšte kapacitu alebo zvoľte iný stôl.'); return; }
     setTables(tables.map(t => ({ ...t, seats: t.id === tableId ? (t.seats.includes(guestId) ? t.seats : [...t.seats, guestId]) : t.seats.filter(s => s !== guestId) })));
   };
   const unassignGuest = (guestId) => setTables(tables.map(t => ({ ...t, seats: t.seats.filter(s => s !== guestId) })));
@@ -443,14 +751,39 @@ export default function App() {
     if (!ev) return;
     const snap = [...timeline];
     setTimeline(timeline.filter(t => t.id !== id));
-    pushUndo(`Udalosť "${ev.event}" zmazaná`, () => setTimeline(snap));
+    pushUndo(lang === 'en' ? `Event "${ev.event}" deleted` : `Udalosť "${ev.event}" zmazaná`, () => setTimeline(snap));
   };
   const updateTimelineEvent = (id, field, value) => {
     setTimeline(timeline.map(t => t.id === id ? { ...t, [field]: value } : t));
   };
 
   // === DOCUMENTS akcie ===
-  const toggleDocument = (id) => setDocuments(documents.map(d => d.id === id ? { ...d, done: !d.done } : d));
+  const toggleDocument = (id) => {
+    const doc = documents.find(d => d.id === id);
+    const wasCompleted = doc?.done;
+    setDocuments(documents.map(d => d.id === id ? { ...d, done: !d.done } : d));
+
+    // Konfety pri splnení (nie pri odznačení)
+    if (doc && !wasCompleted) {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 2500);
+      // Tichý zvukový signál
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 600;
+        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.2);
+      } catch (e) {}
+      track('document_completed', { document: doc.task.substring(0, 50) });
+    }
+  };
   const addDocument = () => {
     if (!newDocument.trim()) return;
     setDocuments([...documents, { id: Date.now(), task: newDocument, done: false }]);
@@ -461,7 +794,7 @@ export default function App() {
     if (!doc) return;
     const snap = [...documents];
     setDocuments(documents.filter(d => d.id !== id));
-    pushUndo(`"${doc.task.substring(0, 40)}${doc.task.length > 40 ? '…' : ''}" zmazané`, () => setDocuments(snap));
+    pushUndo(lang === 'en' ? `"${doc.task.substring(0, 40)}${doc.task.length > 40 ? '…' : ''}" deleted` : `"${doc.task.substring(0, 40)}${doc.task.length > 40 ? '…' : ''}" zmazané`, () => setDocuments(snap));
   };
 
   // === SHARE LINK — enkóduje všetky dáta do URL hash ===
@@ -479,8 +812,88 @@ export default function App() {
       setShareLink(link);
       setShowShareLink(true);
     } catch (err) {
-      alert('Zdieľanie sa nepodarilo vytvoriť. Skúste skôr Excel / PDF export.');
+      alert(lang === 'en' ? 'Failed to create share link. Try Excel / PDF export instead.' : 'Zdieľanie sa nepodarilo vytvoriť. Skúste skôr Excel / PDF export.');
     }
+  };
+
+  // === AUTO-LOAD z localStorage pri prvom načítaní ===
+  const [isHydrated, setIsHydrated] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Ak je share link v URL, nenačítavaj localStorage (použi share dáta)
+    if (window.location.hash.startsWith('#share=')) {
+      setIsHydrated(true);
+      return;
+    }
+
+    try {
+      const saved = localStorage.getItem('janveil-planner-data');
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.coupleName !== undefined) setCoupleName(data.coupleName);
+        if (data.weddingDate !== undefined) setWeddingDate(data.weddingDate);
+        if (data.checklist) setChecklist(data.checklist);
+        if (data.expenses) setExpenses(data.expenses);
+        if (data.budgetTotal !== undefined) setBudgetTotal(data.budgetTotal);
+        if (data.guests) setGuests(data.guests);
+        if (data.tables) setTables(data.tables);
+        if (data.sceneElements) setSceneElements(data.sceneElements.map(e => ({ scale: 1, rotation: 0, ...e })));
+        if (data.timeline) setTimeline(data.timeline);
+        if (data.documents) setDocuments(data.documents);
+        if (data.diary !== undefined) setDiary(data.diary);
+        if (data.lang) setLang(data.lang);
+        if (data.theme) setTheme(data.theme);
+        if (data.lastSaved) setLastSaved(data.lastSaved);
+      }
+    } catch (err) {
+      console.warn('Failed to load saved data:', err);
+    }
+    setIsHydrated(true);
+  }, []);
+
+  // === AUTO-SAVE do localStorage pri každej zmene ===
+  useEffect(() => {
+    if (!isHydrated || typeof window === 'undefined') return;
+
+    // Debounce — uložíme až po 500ms nečinnosti
+    const timer = setTimeout(() => {
+      try {
+        const now = Date.now();
+        const data = {
+          coupleName, weddingDate, checklist, expenses, budgetTotal,
+          guests, tables, sceneElements, timeline, documents, diary,
+          lang, theme,
+          lastSaved: now,
+        };
+        localStorage.setItem('janveil-planner-data', JSON.stringify(data));
+        setLastSaved(now);
+        setShowSavedIndicator(true);
+        setTimeout(() => setShowSavedIndicator(false), 1500);
+      } catch (err) {
+        console.warn('Failed to save data:', err);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [isHydrated, coupleName, weddingDate, checklist, expenses, budgetTotal, guests, tables, sceneElements, timeline, documents, diary, lang, theme]);
+
+  // Pretty-print "naposledy upravené"
+  // eslint-disable-next-line no-unused-vars
+  const formatLastSaved = (timestamp) => {
+    if (!timestamp) return null;
+    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (seconds < 10) return lang === 'en' ? 'just now' : 'pred chvíľou';
+    if (seconds < 60) return lang === 'en' ? `${seconds}s ago` : `pred ${seconds} s`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return lang === 'en' ? `${minutes}m ago` : `pred ${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return lang === 'en' ? `${hours}h ago` : `pred ${hours} h`;
+    const days = Math.floor(hours / 24);
+    if (days === 1) return lang === 'en' ? 'yesterday' : 'včera';
+    if (days < 7) return lang === 'en' ? `${days}d ago` : `pred ${days} dňami`;
+    const d = new Date(timestamp);
+    return d.toLocaleDateString(lang === 'en' ? 'en-US' : 'sk-SK');
   };
 
   // === Load shared link on mount ===
@@ -507,7 +920,6 @@ export default function App() {
         if (data.timeline) setTimeline(data.timeline);
         if (data.documents) setDocuments(data.documents);
         if (data.diary) setDiary(data.diary);
-        
       } catch (err) {
         console.warn('Share link corrupted:', err);
       }
@@ -596,13 +1008,13 @@ export default function App() {
       const cateringData = [
         ['SÚHRN PRE CATERING — Potvrdení hostia'],
         [],
-        ['Celá porcia', mealCounts['Celá porcia'] || 0],
-        ['Polovičná porcia', mealCounts['Polovičná porcia'] || 0],
-        ['Bez jedla', mealCounts['Bez jedla'] || 0],
+        ['Celá porcia', (mealCounts['Celá porcia'] || mealCounts['Full portion'] || 0)],
+        ['Polovičná porcia', (mealCounts['Polovičná porcia'] || mealCounts['Half portion'] || 0)],
+        ['Bez jedla', (mealCounts['Bez jedla'] || mealCounts['No meal'] || 0)],
         [],
-        ['Dospelí (potvrdení)', guests.filter(g => g.rsvp === 'Potvrdená' && g.type === 'Dospelý').length],
-        ['Deti (potvrdené)', guests.filter(g => g.rsvp === 'Potvrdená' && g.type === 'Dieťa').length],
-        ['Detské stoličky potrebné', guests.filter(g => g.highChair && g.rsvp === 'Potvrdená').length],
+        ['Dospelí (potvrdení)', guests.filter(g => (g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed') && (g.type === 'Dospelý' || g.type === 'Adult')).length],
+        ['Deti (potvrdené)', guests.filter(g => (g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed') && (g.type === 'Dieťa' || g.type === 'Child')).length],
+        ['Detské stoličky potrebné', guests.filter(g => g.highChair && (g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed')).length],
         [],
         ['ALERGÉNY A ŠPECIÁLNE DIÉTY'],
       ];
@@ -615,7 +1027,7 @@ export default function App() {
       const seatingData = [['Stôl', 'Tvar', 'Kapacita', 'Obsadené', 'Hostia']];
       tables.forEach(t => {
         const tableGuests = guests.filter(g => t.seats.includes(g.id));
-        const names = tableGuests.map(g => g.type === 'Dieťa' ? `${g.name} (dieťa)` : g.name).join(', ');
+        const names = tableGuests.map(g => (g.type === 'Dieťa' || g.type === 'Child') ? `${g.name} (dieťa)` : g.name).join(', ');
         seatingData.push([t.name, t.shape, t.capacity, tableGuests.length, names || '—']);
       });
       const ws6 = XLSX.utils.aoa_to_sheet(seatingData);
@@ -625,7 +1037,7 @@ export default function App() {
       // Download
       XLSX.writeFile(wb, `${title.replace(/[^a-zA-Z0-9]/g, '-')}-${today}.xlsx`);
     } catch (err) {
-      alert('Export do Excelu zlyhal. Skúste to znova alebo použite PDF export.');
+      alert(lang === 'en' ? 'Excel export failed. Try again or use PDF export.' : 'Export do Excelu zlyhal. Skúste to znova alebo použite PDF export.');
       console.error(err);
     }
   };
@@ -675,15 +1087,15 @@ export default function App() {
     const guestRows = guests.map(g => {
       const tableName = tables.find(t => t.seats.includes(g.id))?.name || '—';
       const badges = [
-        `<span style="background: ${g.rsvp === 'Potvrdená' ? '#EBE1CF' : g.rsvp === 'Odmietol' ? '#FEE2E2' : '#F3F4F6'}; color: ${g.rsvp === 'Potvrdená' ? '#9B7A45' : g.rsvp === 'Odmietol' ? '#DC2626' : '#6B7280'}; padding: 2px 8px; border-radius: 999px; font-size: 10px;">${g.rsvp}</span>`,
-        `<span style="color: #4A3F2E; font-size: 11px;">${g.meal}</span>`,
+        `<span style="background: ${(g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed') ? '#EBE1CF' : (g.rsvp === 'Odmietol' || g.rsvp === 'Declined') ? '#FEE2E2' : '#F3F4F6'}; color: ${(g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed') ? '#9B7A45' : (g.rsvp === 'Odmietol' || g.rsvp === 'Declined') ? '#DC2626' : '#6B7280'}; padding: 2px 8px; border-radius: 999px; font-size: 10px;">${tr(g.rsvp)}</span>`,
+        `<span style="color: #4A3F2E; font-size: 11px;">${tr(g.meal)}</span>`,
         g.highChair ? `<span style="color: #9B7A45; font-size: 11px;">+ Detská stolička</span>` : '',
         g.allergies ? `<span style="color: #B45309; font-size: 11px;">⚠ ${escapeHtml(g.allergies)}</span>` : '',
       ].filter(Boolean).join(' · ');
       return `
         <tr style="border-bottom: 1px solid #F0EAD8;">
-          <td style="padding: 10px 8px; font-family: 'Cormorant Garamond', serif; font-size: 14px; color: #1E1910;">${escapeHtml(g.name)} ${g.type === 'Dieťa' ? '<span style="color: #9B7A45; font-size: 10px;">(dieťa)</span>' : ''}</td>
-          <td style="padding: 10px 8px; font-size: 11px; color: #6B5946;">${g.side}</td>
+          <td style="padding: 10px 8px; font-family: 'Cormorant Garamond', serif; font-size: 14px; color: #1E1910;">${escapeHtml(g.name)} ${(g.type === 'Dieťa' || g.type === 'Child') ? '<span style="color: #9B7A45; font-size: 10px;">(dieťa)</span>' : ''}</td>
+          <td style="padding: 10px 8px; font-size: 11px; color: #6B5946;">${tr(g.side)}</td>
           <td style="padding: 10px 8px;">${badges}</td>
           <td style="padding: 10px 8px; font-size: 11px; color: #4A3F2E;">${escapeHtml(tableName)}</td>
         </tr>
@@ -693,7 +1105,7 @@ export default function App() {
     const tableBlocks = tables.map(t => {
       const tableGuests = guests.filter(g => t.seats.includes(g.id));
       const guestList = tableGuests.length
-        ? tableGuests.map(g => `<li style="padding: 3px 0; font-size: 12px; color: #1E1910;">${escapeHtml(g.name)}${g.type === 'Dieťa' ? ' <span style="color: #9B7A45; font-size: 10px;">(dieťa)</span>' : ''}</li>`).join('')
+        ? tableGuests.map(g => `<li style="padding: 3px 0; font-size: 12px; color: #1E1910;">${escapeHtml(g.name)}${(g.type === 'Dieťa' || g.type === 'Child') ? ' <span style="color: #9B7A45; font-size: 10px;">(dieťa)</span>' : ''}</li>`).join('')
         : '<li style="color: #6B5946; font-style: italic; font-size: 12px;">Prázdny stôl</li>';
       return `
         <div style="border: 1px solid #E5DFD3; border-radius: 12px; padding: 14px; margin-bottom: 10px; page-break-inside: avoid;">
@@ -706,14 +1118,14 @@ export default function App() {
       `;
     }).join('');
 
-    const cateringBlock = guests.some(g => g.rsvp === 'Potvrdená') ? `
+    const cateringBlock = guests.some(g => (g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed')) ? `
       <div style="page-break-inside: avoid; margin-bottom: 28px;">
         <h3 style="font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 18px; color: #1E1910; border-bottom: 1px solid #E5DFD3; padding-bottom: 6px; margin-bottom: 12px;">Pre catering — Potvrdení hostia</h3>
         <div style="display: flex; gap: 24px; margin-bottom: 12px;">
-          <div><div style="font-family: 'Cormorant Garamond', serif; font-size: 28px; color: #1E1910;">${mealCounts['Celá porcia'] || 0}</div><div style="font-size: 11px; color: #6B5946;">Celá porcia</div></div>
-          <div><div style="font-family: 'Cormorant Garamond', serif; font-size: 28px; color: #1E1910;">${mealCounts['Polovičná porcia'] || 0}</div><div style="font-size: 11px; color: #6B5946;">Polovičná porcia</div></div>
-          <div><div style="font-family: 'Cormorant Garamond', serif; font-size: 28px; color: #1E1910;">${mealCounts['Bez jedla'] || 0}</div><div style="font-size: 11px; color: #6B5946;">Bez jedla</div></div>
-          <div><div style="font-family: 'Cormorant Garamond', serif; font-size: 28px; color: #1E1910;">${guests.filter(g => g.highChair && g.rsvp === 'Potvrdená').length}</div><div style="font-size: 11px; color: #6B5946;">Detských stoličiek</div></div>
+          <div><div style="font-family: 'Cormorant Garamond', serif; font-size: 28px; color: #1E1910;">${(mealCounts['Celá porcia'] || mealCounts['Full portion'] || 0)}</div><div style="font-size: 11px; color: #6B5946;">{t("guests.fullPortion")}</div></div>
+          <div><div style="font-family: 'Cormorant Garamond', serif; font-size: 28px; color: #1E1910;">${(mealCounts['Polovičná porcia'] || mealCounts['Half portion'] || 0)}</div><div style="font-size: 11px; color: #6B5946;">{t("guests.halfPortion")}</div></div>
+          <div><div style="font-family: 'Cormorant Garamond', serif; font-size: 28px; color: #1E1910;">${(mealCounts['Bez jedla'] || mealCounts['No meal'] || 0)}</div><div style="font-size: 11px; color: #6B5946;">{t("guests.noMeal")}</div></div>
+          <div><div style="font-family: 'Cormorant Garamond', serif; font-size: 28px; color: #1E1910;">${guests.filter(g => g.highChair && (g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed')).length}</div><div style="font-size: 11px; color: #6B5946;">Detských stoličiek</div></div>
         </div>
       </div>
     ` : '';
@@ -782,7 +1194,7 @@ export default function App() {
       <p class="section-subtitle">Kde sa momentálne nachádzame</p>
       <div class="stats-row">
         <div class="stat"><div class="stat-label">Splnené úlohy</div><div class="stat-value">${completedPct}%</div><div style="font-size: 11px; color: #6B5946; margin-top: 4px;">${completedTasks} / ${checklist.length}</div></div>
-        <div class="stat"><div class="stat-label">Minuté</div><div class="stat-value">${totalSpent.toLocaleString('sk-SK')} €</div><div style="font-size: 11px; color: #6B5946; margin-top: 4px;">z ${budgetTotal.toLocaleString('sk-SK')} €</div></div>
+        <div class="stat"><div class="stat-label">{t('budget.spent')}</div><div class="stat-value">${totalSpent.toLocaleString('sk-SK')} €</div><div style="font-size: 11px; color: #6B5946; margin-top: 4px;">z ${budgetTotal.toLocaleString('sk-SK')} €</div></div>
         <div class="stat"><div class="stat-label">Potvrdení hostia</div><div class="stat-value">${confirmedGuests} / ${guests.length}</div></div>
         <div class="stat"><div class="stat-label">Stoly</div><div class="stat-value">${tables.length}</div></div>
       </div>
@@ -802,7 +1214,7 @@ export default function App() {
       <h2 class="section-title">Rozpočet</h2>
       <p class="section-subtitle">Celkom naplánované: ${totalPlanned.toLocaleString('sk-SK')} € · minuté: ${totalSpent.toLocaleString('sk-SK')} €</p>
       <table>
-        <thead><tr><th>Kategória</th><th style="text-align:right;">Naplánované</th><th style="text-align:right;">Minuté</th><th style="text-align:right;">Stav</th></tr></thead>
+        <thead><tr><th>Kategória</th><th style="text-align:right;">{t('budget.planned')}</th><th style="text-align:right;">{t('budget.spent')}</th><th style="text-align:right;">Stav</th></tr></thead>
         <tbody>${budgetRows}</tbody>
       </table>
     </div>` : ''}
@@ -851,7 +1263,7 @@ export default function App() {
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 100);
     } catch (err) {
-      alert('PDF export zlyhal. Skúste Excel namiesto toho.');
+      alert(lang === 'en' ? 'PDF export failed. Try Excel instead.' : 'PDF export zlyhal. Skúste Excel namiesto toho.');
       console.error(err);
     }
   };
@@ -906,7 +1318,7 @@ export default function App() {
       setImportText('');
       return true;
     } catch (err) {
-      alert('Neplatný formát JSON. Skontrolujte údaje.');
+      alert(lang === 'en' ? 'Invalid JSON format. Please check the data.' : 'Neplatný formát JSON. Skontrolujte údaje.');
       return false;
     }
   };
@@ -923,21 +1335,40 @@ export default function App() {
   // Kontextové správy podľa počtu dní do svadby
   const getCountdownMessage = (days) => {
     if (days === null || days < 0) return null;
-    if (days === 0) return 'Dnes je váš deň. Užite si ho ♡';
-    if (days === 1) return 'Zajtra je deň D. Hlavne pokojne dýchajte.';
-    if (days <= 7) return 'Posledný týždeň — hlavne nezabudnite odpočívať.';
-    if (days <= 30) return 'Mesiac do svadby. Posledné úpravy a kontroly.';
-    if (days <= 90) return 'Posledná skúška šiat by mala byť čoskoro.';
-    if (days <= 180) return 'Čas začať potvrdzovať dodávateľov.';
-    if (days <= 365) return 'Máte dosť času. Vychutnajte si plánovanie.';
-    return 'Začínate s dostatkom času — krásne obdobie plánovania.';
+    if (days === 0) return lang === 'en' ? 'Today is your day. Enjoy it ♡' : 'Dnes je váš deň. Užite si ho ♡';
+    if (days === 1) return lang === 'en' ? 'Tomorrow is the big day. Breathe calmly.' : 'Zajtra je deň D. Hlavne pokojne dýchajte.';
+    if (days <= 7) return lang === 'en' ? 'Final week — remember to rest.' : 'Posledný týždeň — hlavne nezabudnite odpočívať.';
+    if (days <= 30) return lang === 'en' ? 'One month to go. Final adjustments and checks.' : 'Mesiac do svadby. Posledné úpravy a kontroly.';
+    if (days <= 90) return lang === 'en' ? 'Final dress fitting should be soon.' : 'Posledná skúška šiat by mala byť čoskoro.';
+    if (days <= 180) return lang === 'en' ? 'Time to start confirming vendors.' : 'Čas začať potvrdzovať dodávateľov.';
+    if (days <= 365) return lang === 'en' ? 'You have plenty of time. Enjoy planning.' : 'Máte dosť času. Vychutnajte si plánovanie.';
+    return lang === 'en' ? 'Starting with plenty of time — a beautiful planning period.' : 'Začínate s dostatkom času — krásne obdobie plánovania.';
   };
   const countdownMessage = getCountdownMessage(daysUntil);
   const completedTasks = checklist.filter(t => t.done).length;
   const completedPct = checklist.length ? Math.round((completedTasks / checklist.length) * 100) : 0;
+
+  // === URGENT úlohy — s deadline <7 dní alebo prešvihnuté ===
+  const getTaskUrgency = (task) => {
+    if (!task.deadline || task.done) return null;
+    const days = Math.ceil((new Date(task.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+    if (days < 0) return { level: 'overdue', days: Math.abs(days) };
+    if (days === 0) return { level: 'today', days: 0 };
+    if (days <= 7) return { level: 'soon', days };
+    return { level: 'future', days };
+  };
+  const urgentTasks = checklist.filter(t => {
+    const u = getTaskUrgency(t);
+    return u && (u.level === 'overdue' || u.level === 'today' || u.level === 'soon');
+  });
+  const overdueTasks = checklist.filter(t => {
+    const u = getTaskUrgency(t);
+    return u && u.level === 'overdue';
+  });
+
   const totalSpent = expenses.reduce((sum, e) => sum + e.spent, 0);
   const totalPlanned = expenses.reduce((sum, e) => sum + e.planned, 0);
-  const confirmedGuests = guests.filter(g => g.rsvp === 'Potvrdená').length;
+  const confirmedGuests = guests.filter(g => (g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed')).length;
   const unassignedGuests = guests.filter(g => !tables.some(t => t.seats.includes(g.id)));
 
   const mealCounts = guests.reduce((acc, g) => {
@@ -949,17 +1380,634 @@ export default function App() {
 
   const documentsDone = documents.filter(d => d.done).length;
 
+  // === TRANSLATIONS ===
+  const t = (key) => {
+    const translations = {
+      // Navigation / modules
+      'nav.home': { sk: 'Domov', en: 'Home' },
+      'nav.overview': { sk: 'Prehľad', en: 'Overview' },
+      'nav.checklist': { sk: 'Zoznam úloh', en: 'Task List' },
+      'nav.budget': { sk: 'Rozpočet', en: 'Budget' },
+      'nav.guests': { sk: 'Hostia', en: 'Guests' },
+      'nav.seating': { sk: 'Plán sály', en: 'Seating Plan' },
+      'nav.timeline': { sk: 'Harmonogram dňa D', en: 'Wedding Day Schedule' },
+      'nav.documents': { sk: 'Doklady a papierovanie', en: 'Documents & Paperwork' },
+      'nav.diary': { sk: 'Môj denník', en: 'My Diary' },
+      'nav.faq': { sk: 'Najčastejšie otázky', en: 'FAQ' },
+      'nav.quickActions': { sk: 'Rýchle akcie', en: 'Quick actions' },
+      'nav.navigation': { sk: 'Navigácia', en: 'Navigation' },
+
+      // Hero
+      'hero.tagline': { sk: 'Pretože každý detail má význam', en: 'Because every detail matters' },
+      'hero.title1': { sk: 'Váš svadobný deň,', en: 'Your wedding day,' },
+      'hero.title2': { sk: 'premyslený do posledného detailu', en: 'planned to the last detail' },
+      'hero.subtitle': {
+        sk: 'Bezplatný plánovač od svadobného salóna JanVeil. Bez registrácie, bez reklám — len priestor pre vašu lásku a vašu víziu.',
+        en: 'Free planner from the JanVeil bridal salon. No registration, no ads — just space for your love and vision.',
+      },
+      'hero.daysUntil': { sk: 'Do vášho veľkého dňa', en: 'Until your big day' },
+      'hero.day': { sk: 'deň', en: 'day' },
+      'hero.days2_4': { sk: 'dni', en: 'days' },
+      'hero.days5plus': { sk: 'dní', en: 'days' },
+      'hero.startTogether': { sk: 'Začnime spolu', en: "Let's begin" },
+      'hero.edit': { sk: 'Upraviť', en: 'Edit' },
+      'hero.coupleNames': { sk: 'Mená mladomanželov (napr. Anna & Martin)', en: 'Couple names (e.g. Anna & Martin)' },
+      'hero.weddingDate': { sk: 'Dátum svadby', en: 'Wedding date' },
+      'hero.tools': { sk: 'Vaše nástroje', en: 'Your tools' },
+      'hero.open': { sk: 'Otvoriť', en: 'Open' },
+      'hero.findDress': { sk: 'Hľadáte šaty?', en: 'Looking for a dress?' },
+      'hero.ourCollection': { sk: 'Naša kolekcia', en: 'Our collection' },
+      'hero.discoverDresses': { sk: 'Objavte šaty JanVeil', en: 'Discover JanVeil dresses' },
+      'hero.discoverDressesSub': { sk: 'Ručne šité, z najkrajších látok, pre tie najnáročnejšie nevesty', en: 'Handmade, from the finest fabrics, for the most discerning brides' },
+      'hero.ourCollectionCard': { sk: 'Naša kolekcia', en: 'Our collection' },
+      'hero.ourCollectionDesc': { sk: 'Pozrite si výber svadobných šiat — klasické korzetové, A-čkové, bohemské či minimalistické modely.', en: 'Browse our wedding dress collection — classic corset, A-line, bohemian or minimalist models.' },
+      'hero.viewCollection': { sk: 'Pozrieť kolekciu', en: 'View collection' },
+      'hero.whichStyle': { sk: 'Aký štýl svadby vám sadne?', en: 'Which wedding style suits you?' },
+      'hero.quizDesc': { sk: 'Krátky kvíz (5 otázok) — zistíme váš svadobný štýl a odporučíme vhodné šaty z našej kolekcie.', en: 'Short quiz (5 questions) — we will find your wedding style and recommend matching dresses.' },
+      'hero.startQuiz': { sk: 'Začať kvíz', en: 'Start quiz' },
+      'hero.motto': { sk: '"Pretože tvoja láska si zaslúži dokonalé šaty."', en: '"Because your love deserves the perfect dress."' },
+      'hero.mottoSub': { sk: 'Keď bude čas vybrať svadobné šaty, radi vás privítame v našom salóne v Zlatých Moravciach.', en: 'When the time comes to choose your wedding dress, we will gladly welcome you in our salon in Zlaté Moravce.' },
+      'hero.bookFitting': { sk: 'Objednať skúšku', en: 'Book fitting' },
+      'hero.salonTag': { sk: 'Svadobný salón JanVeil', en: 'JanVeil Bridal Salon' },
+      'hero.urgentTasks': { sk: 'úloh urgentných', en: 'urgent task(s)' },
+
+      // Actions
+      'actions.share': { sk: 'Zdieľať', en: 'Share' },
+      'actions.shareWithPartner': { sk: 'Zdieľať s partnerom', en: 'Share with partner' },
+      'actions.export': { sk: 'Exportovať', en: 'Export' },
+      'actions.import': { sk: 'Načítať', en: 'Import' },
+      'actions.save': { sk: 'Uložiť', en: 'Save' },
+      'actions.cancel': { sk: 'Zrušiť', en: 'Cancel' },
+      'actions.delete': { sk: 'Zmazať', en: 'Delete' },
+      'actions.add': { sk: 'Pridať', en: 'Add' },
+      'actions.close': { sk: 'Zavrieť', en: 'Close' },
+      'actions.edit': { sk: 'Upraviť', en: 'Edit' },
+      'actions.backToOverview': { sk: 'Späť na prehľad', en: 'Back to overview' },
+
+      // Templates
+      'templates.title': { sk: 'Šablóny svadieb', en: 'Wedding Templates' },
+      'templates.subtitle': { sk: 'Rýchly štart s predpripravenými hodnotami', en: 'Quick start with preset values' },
+      'templates.cta': { sk: 'Začať so šablónou', en: 'Start with template' },
+      'templates.apply': { sk: 'Použiť túto šablónu', en: 'Apply this template' },
+      'templates.desc': {
+        sk: 'Vyberte si šablónu ktorá vám je blízka. Predvyplní rozpočet a odhadované sumy. Všetko môžete neskôr upraviť.',
+        en: 'Choose a template that matches your vision. It will set up budget categories and estimated costs. You can adjust everything later.',
+      },
+      'templates.total': { sk: 'Spolu', en: 'Total' },
+
+      // Auto-save
+      'saved.label': { sk: 'Uložené', en: 'Saved' },
+      'saved.lastEdit': { sk: 'Naposledy upravené', en: 'Last edited' },
+
+      // Budget
+      'budget.subtitle': { sk: 'Prehľad vašich investícií do toho najkrajšieho dňa', en: 'Overview of your investments in the most beautiful day' },
+      'budget.total': { sk: 'Celkový rozpočet', en: 'Total budget' },
+      'budget.planned': { sk: 'Naplánované', en: 'Planned' },
+      'budget.plannedShort': { sk: 'Plán', en: 'Planned' },
+      'budget.spent': { sk: 'Minuté', en: 'Spent' },
+      'budget.usage': { sk: 'Využitie rozpočtu', en: 'Budget usage' },
+      'budget.category': { sk: 'Kategória', en: 'Category' },
+      'budget.addCategory': { sk: 'Pridať kategóriu', en: 'Add category' },
+      'budget.notPlanned': { sk: 'Nenaplánované', en: 'Not planned yet' },
+      'budget.placeholderCat': { sk: 'Napr. Fotokútik', en: 'e.g. Photobooth' },
+
+      // Checklist
+      'checklist.subtitle': { sk: 'Cesta k vášmu veľkému dňu', en: 'The path to your big day' },
+      'checklist.completed': { sk: 'Splnené', en: 'Completed' },
+      'checklist.addTask': { sk: 'Pridať úlohu', en: 'Add task' },
+      'checklist.phase': { sk: 'Fáza', en: 'Phase' },
+      'checklist.taskName': { sk: 'Názov úlohy', en: 'Task name' },
+      'checklist.setDeadline': { sk: 'Nastaviť termín', en: 'Set deadline' },
+
+      // Guests
+      'guests.subtitle': { sk: 'Tí, s ktorými chcete zdieľať svoj veľký deň', en: 'Those you want to share your big day with' },
+      'guests.total': { sk: 'Celkom', en: 'Total' },
+      'guests.adults': { sk: 'Dospelí', en: 'Adults' },
+      'guests.children': { sk: 'Deti', en: 'Children' },
+      'guests.confirmed': { sk: 'Potvrdení', en: 'Confirmed' },
+      'guests.pending': { sk: 'Čakajúci', en: 'Pending' },
+      'guests.rejected': { sk: 'Odmietli', en: 'Declined' },
+      'guests.allergies': { sk: 'Alergiky', en: 'Allergies' },
+      'guests.all': { sk: 'Všetci', en: 'All' },
+      'guests.searchPlaceholder': { sk: 'Hľadať hosťa podľa mena alebo alergie...', en: 'Search guest by name or allergy...' },
+      'guests.name': { sk: 'Meno', en: 'Name' },
+      'guests.side': { sk: 'Strana', en: 'Side' },
+      'guests.bride': { sk: 'Nevesta', en: 'Bride' },
+      'guests.groom': { sk: 'Ženích', en: 'Groom' },
+      'guests.joint': { sk: 'Spoločné', en: 'Joint' },
+      'guests.addGuest': { sk: 'Pridať hosťa', en: 'Add guest' },
+      'guests.addFamily': { sk: 'Pridať celú rodinu naraz', en: 'Add entire family at once' },
+      'guests.familyName': { sk: 'Priezvisko rodiny', en: 'Family surname' },
+      'guests.familyCount': { sk: 'Počet členov', en: 'Number of members' },
+      'guests.addFamilyBtn': { sk: 'Pridať rodinu', en: 'Add family' },
+      'guests.noGuests': { sk: 'Zatiaľ nie sú pridaní žiadni hostia', en: 'No guests added yet' },
+      'guests.noMatch': { sk: 'Žiadni hostia nezodpovedajú filtrom', en: 'No guests match the filters' },
+      'guests.selectAll': { sk: 'Vybrať všetkých', en: 'Select all' },
+      'guests.selected': { sk: 'vybraný', en: 'selected' },
+      'guests.selectedPlural': { sk: 'vybraných', en: 'selected' },
+      'guests.confirm': { sk: 'Potvrdiť', en: 'Confirm' },
+      'guests.decline': { sk: 'Odmietol', en: 'Decline' },
+      'guests.assignToTable': { sk: 'Priradiť k stolu', en: 'Assign to table' },
+      'guests.clearSelection': { sk: 'Zrušiť výber', en: 'Clear selection' },
+      'guests.forCatering': { sk: 'Pre catering — potvrdení hostia', en: 'For catering — confirmed guests' },
+      'guests.fullPortion': { sk: 'Celá porcia', en: 'Full portion' },
+      'guests.halfPortion': { sk: 'Polovičná porcia', en: 'Half portion' },
+      'guests.noMeal': { sk: 'Bez jedla', en: 'No meal' },
+      'guests.highChair': { sk: 'Detská stolička', en: 'High chair' },
+      'guests.rsvpConfirmed': { sk: 'Potvrdená', en: 'Confirmed' },
+      'guests.rsvpPending': { sk: 'Čaká sa', en: 'Pending' },
+      'guests.rsvpDeclined': { sk: 'Odmietol', en: 'Declined' },
+      'guests.adult': { sk: 'Dospelý', en: 'Adult' },
+      'guests.child': { sk: 'Dieťa', en: 'Child' },
+
+      // Seating
+      'seating.subtitle': { sk: 'Rozmiestnite stoly, parket a ďalšie prvky na mape sály', en: 'Arrange tables, dance floor and other elements on the hall map' },
+      'seating.tableCount': { sk: 'Počet stolov', en: 'Tables' },
+      'seating.seatsUsed': { sk: 'Obsadené miesta', en: 'Seats used' },
+      'seating.unassigned': { sk: 'Nepriradení', en: 'Unassigned' },
+      'seating.mapView': { sk: 'Pohľad mapy', en: 'Map view' },
+      'seating.listView': { sk: 'Zoznam', en: 'List' },
+      'seating.addTable': { sk: 'Pridať stôl', en: 'Add table' },
+      'seating.tableName': { sk: 'Názov stolu', en: 'Table name' },
+      'seating.shape': { sk: 'Tvar', en: 'Shape' },
+      'seating.round': { sk: 'Okrúhly', en: 'Round' },
+      'seating.rectangular': { sk: 'Obdĺžnikový', en: 'Rectangular' },
+      'seating.capacity': { sk: 'Kapacita', en: 'Capacity' },
+
+      // Timeline
+      'timeline.subtitle': { sk: 'Časový rozpis — hodinu po hodine, aby všetko kĺzalo ako hodinky', en: 'Schedule — hour by hour, so everything runs smoothly' },
+      'timeline.addEvent': { sk: 'Pridať udalosť', en: 'Add event' },
+      'timeline.time': { sk: 'Čas', en: 'Time' },
+      'timeline.event': { sk: 'Udalosť', en: 'Event' },
+      'timeline.eventPlaceholder': { sk: 'Napr. Skupinová fotka rodiny', en: 'e.g. Family group photo' },
+      'timeline.notePlaceholder': { sk: 'Poznámka (voliteľná)...', en: 'Note (optional)...' },
+      'timeline.noEvents': { sk: 'Zatiaľ žiadne udalosti', en: 'No events yet' },
+
+      // Documents
+      'documents.subtitle': { sk: 'Všetko okolo matriky, občianskych a zmeny priezviska', en: 'Everything about registry, IDs and name changes' },
+      'documents.handled': { sk: 'Vybavené', en: 'Handled' },
+      'documents.addCustom': { sk: 'Pridať vlastný doklad', en: 'Add custom document' },
+      'documents.placeholder': { sk: 'Napr. Overený preklad rodného listu', en: 'e.g. Certified translation of birth certificate' },
+
+      // Diary
+      'diary.subtitle': { sk: 'Vaše myšlienky, inšpirácie, nápady', en: 'Your thoughts, inspirations, ideas' },
+      'diary.forYourEyes': { sk: 'Pre vaše oči', en: 'For your eyes only' },
+      'diary.writeAnything': { sk: 'Napíšte si sem čokoľvek. Nápady, pocity, čo sa vám páči, čo si treba zapamätať.', en: 'Write anything here. Ideas, feelings, what you love, what to remember.' },
+      'diary.placeholder': { sk: 'Dnes som videla šaty ktoré sa mi páčia...', en: 'Today I saw a dress I love...' },
+      'diary.characters': { sk: 'znakov', en: 'characters' },
+      'diary.autoSaved': { sk: 'Automaticky uložené v tomto prehliadači', en: 'Auto-saved in this browser' },
+
+      // FAQ
+      'faq.subtitle': { sk: 'Odpovede na otázky ktoré dostávame v salóne každý deň', en: 'Answers to questions we receive in the salon every day' },
+      'faq.haveQuestion': { sk: 'Máte otázku? Možno je tu odpoveď.', en: 'Have a question? Maybe the answer is here.' },
+      'faq.noAnswer': { sk: 'Nenašli ste odpoveď?', en: "Didn't find an answer?" },
+      'faq.callUs': { sk: 'Zavolajte nám alebo napíšte', en: 'Call us or send a message' },
+      'faq.kvetka': { sk: 'Kvetka, majiteľka salónu, rada odpovie na všetky vaše otázky.', en: 'Kvetka, the salon owner, is happy to answer all your questions.' },
+      'faq.evenOutside': { sk: 'Aj mimo otváracích hodín.', en: 'Even outside business hours.' },
+    };
+    return (translations[key] && translations[key][lang]) || translations[key]?.sk || key;
+  };
+
+  // === DATA TRANSLATOR ===
+  // Preloží defaultný text (úlohy, kategórie, fázy...) ak je jazyk EN.
+  // Ak text nie je v slovníku, vráti pôvodný (umožní to aby si nevesta napísala vlastný text).
+  const tr = (text) => {
+    if (lang !== 'en' || !text) return text;
+    return dataDictionary[text] || text;
+  };
+
+  // Kompletný slovník pre všetky defaultné slovenské texty → anglické
+  const dataDictionary = {
+    // === FÁZY (phases) ===
+    '12+ mesiacov pred': '12+ months before',
+    '9-12 mesiacov pred': '9-12 months before',
+    '6-9 mesiacov pred': '6-9 months before',
+    '3-6 mesiacov pred': '3-6 months before',
+    '1-3 mesiace pred': '1-3 months before',
+    '2-4 týždne pred': '2-4 weeks before',
+    '1-2 týždne pred': '1-2 weeks before',
+    '1 týždeň pred': '1 week before',
+    '1-2 dni pred': '1-2 days before',
+    'Deň D': 'Wedding Day',
+
+    // === CHECKLIST ÚLOHY ===
+    // 12+ mesiacov
+    'Stanoviť termín svadby': 'Set wedding date',
+    'Informovať o termíne najbližšiu rodinu a priateľov': 'Inform close family and friends about the date',
+    'Stanoviť predbežný rozpočet svadby': 'Set preliminary wedding budget',
+    'Stanoviť predbežný počet hostí': 'Set preliminary guest count',
+    'Vytvoriť predbežný zoznam hostí': 'Create preliminary guest list',
+    'Vybrať štýl a farebnosť svadby': 'Choose wedding style and color palette',
+    'Urobiť prieskum svadobných štýlov': 'Research wedding styles',
+    'Naplánovať predbežný program svadby': 'Plan preliminary wedding program',
+    'Prieskum miest na svadobnú hostinu': 'Research reception venues',
+    'Návšteva priestorov hostiny, stretnutie so zodpovednou osobou': 'Visit reception venue, meet the contact person',
+    'Rezervácia priestorov hostiny': 'Reserve reception venue',
+    'Vybrať miesto obradu (civilný / cirkevný)': 'Choose ceremony venue (civil / religious)',
+    'Nahlásiť termín a čas obradu na matrike': 'Register ceremony date and time at registry office',
+    'Stretnutie s kňazom (cirkevný sobáš)': 'Meeting with priest (religious wedding)',
+    'Dohodnúť termín a čas obradu': 'Agree on ceremony date and time',
+
+    // 9-12 mesiacov
+    'Prieskum ponuky svadobných salónov': 'Research bridal salons',
+    'Vybrať štýl a typ svadobných šiat': 'Choose wedding dress style and type',
+    'Dohodnúť termín skúšky šiat (JanVeil ♡)': 'Book dress fitting appointment (JanVeil ♡)',
+    'Rezervovať svadobné šaty a závoj': 'Reserve wedding dress and veil',
+    'Prieskum fotografov': 'Research photographers',
+    'Rezervovať fotografa': 'Book photographer',
+    'Prieskum kameramanov': 'Research videographers',
+    'Rezervovať kameramana': 'Book videographer',
+    'Vybrať svedkov': 'Choose witnesses',
+    'Vybrať družičky': 'Choose bridesmaids',
+    'Vybrať štýl svadobného obleku': 'Choose suit style',
+    'Preveriť možnosti ubytovania pre hostí': 'Check accommodation options for guests',
+    'Rezervovať ubytovanie': 'Book accommodation',
+    'Preveriť podmienky sobáša (formálne náležitosti)': 'Verify wedding requirements (formal paperwork)',
+    'Podať žiadosť o uzavretie manželstva (matrika)': 'Submit marriage application (registry)',
+    'Naplánovať predmanželskú náuku (cirkevný sobáš)': 'Plan pre-marital course (religious wedding)',
+
+    // 6-9 mesiacov
+    'Prieskum DJ-ov / živých kapiel': 'Research DJs / live bands',
+    'Rezervovať DJ-ja': 'Book DJ',
+    'Rezervovať živú kapelu (ak áno)': 'Book live band (if applicable)',
+    'Prieskum možností hudby na obrade': 'Research ceremony music options',
+    'Rezervovať organistu / speváka / zbor na obrad': 'Book organist / singer / choir for ceremony',
+    'Prieskum starejších / moderátorov': 'Research toastmasters / MCs',
+    'Rezervovať starejšieho / moderátora': 'Book toastmaster / MC',
+    'Kúpiť / dať ušiť svadobný oblek': 'Buy / tailor the wedding suit',
+    'Kúpiť košeľu a doplnky k obleku (kravata, motýlik)': 'Buy shirt and suit accessories (tie, bowtie)',
+    'Vybrať snubné prstene': 'Choose wedding rings',
+    'Objednať snubné prstene': 'Order wedding rings',
+    'Prieskum cukrárov / svadobných tort': 'Research bakers / wedding cakes',
+    'Rezervovať cukrára / svadobnú tortu': 'Book baker / wedding cake',
+    'Prieskum kvetinárov': 'Research florists',
+    'Rezervovať kvetinára': 'Book florist',
+    'Prieskum cateringu / výzdoby stolov': 'Research catering / table decoration',
+    'Vybrať catering a menu': 'Choose catering and menu',
+    'Prieskum prvej skúšky šiat (JanVeil ♡)': 'Attend first dress fitting (JanVeil ♡)',
+    'Vybrať topánky k šatám': 'Choose shoes for the dress',
+    'Vybrať bižutériu a doplnky nevesty': 'Choose bride\'s jewelry and accessories',
+
+    // 3-6 mesiacov
+    'Objednať svadobné oznámenia': 'Order wedding announcements',
+    'Rozoslať svadobné oznámenia': 'Send out wedding announcements',
+    'Objednať svadobné pozvánky': 'Order wedding invitations',
+    'Navrhnúť zasadací poriadok': 'Design seating plan',
+    'Vybrať svadobnú výzdobu (kvety, dekor)': 'Choose wedding decorations (flowers, decor)',
+    'Objednať svadobnú kyticu': 'Order bridal bouquet',
+    'Objednať kvety pre družičky a svedkov': 'Order flowers for bridesmaids and witnesses',
+    'Objednať výzdobu obradnej sály': 'Order ceremony hall decoration',
+    'Objednať výzdobu svadobnej hostiny': 'Order reception decoration',
+    'Objednať výzdobu auta': 'Order car decoration',
+    'Prieskum svadobných účesov a líčenia': 'Research hairstyles and makeup',
+    'Dohodnúť kaderníčku': 'Book hairstylist',
+    'Dohodnúť vizážistku': 'Book makeup artist',
+    'Vyskúšať účes a líčenie': 'Trial hair and makeup',
+    'Vybrať svadobnú cestu': 'Choose honeymoon destination',
+    'Rezervovať svadobnú cestu': 'Book honeymoon',
+    'Vybaviť pasy (ak potrebné)': 'Arrange passports (if needed)',
+    'Vybaviť víza (ak potrebné)': 'Arrange visas (if needed)',
+
+    // 1-3 mesiace
+    'Odoslať svadobné pozvánky': 'Send wedding invitations',
+    'Pripraviť zoznam dôležitých telefónnych kontaktov (dodávatelia, hostia)': 'Prepare important phone contacts list (vendors, guests)',
+    'Stretnutie s fotografom (program, shot list)': 'Meeting with photographer (program, shot list)',
+    'Stretnutie s kameramanom (pokyny)': 'Meeting with videographer (instructions)',
+    'Stretnutie s DJ-om (playlist)': 'Meeting with DJ (playlist)',
+    'Stretnutie s moderátorom / starejším (program)': 'Meeting with MC / toastmaster (program)',
+    'Druhá skúška šiat (JanVeil ♡)': 'Second dress fitting (JanVeil ♡)',
+    'Skúška svadobného obleku': 'Suit fitting',
+    'Objednať bonboniéry / drobné darčeky pre hostí': 'Order wedding favors / small gifts for guests',
+    'Dohodnúť si odvoz / taxíky pre hostí': 'Arrange transportation / taxis for guests',
+    'Vybrať svadobné rozlúčkové akcie (rozlúčka so slobodou)': 'Plan bachelor / bachelorette parties',
+    'Dohodnúť predsvadobné focenie (ak áno)': 'Arrange pre-wedding photoshoot (if yes)',
+    'Pripraviť hudbu na prvý tanec': 'Prepare first dance music',
+    'Dohodnúť svadobný tanec (lekcie, ak treba)': 'Arrange dance lessons (if needed)',
+    'Vybrať hudbu na obrad': 'Choose ceremony music',
+    'Pripraviť príhovor (svedkovia, rodičia)': 'Prepare speeches (witnesses, parents)',
+
+    // 2-4 týždne
+    'Finálny počet hostí (RSVP)': 'Final guest count (RSVP)',
+    'Finalizovať zasadací poriadok': 'Finalize seating plan',
+    'Pripraviť zoznam hostí pre fotografa (rodinné fotky)': 'Prepare guest list for photographer (family photos)',
+    'Nahlásiť finálny počet hostí do cateringu': 'Notify catering of final guest count',
+    'Vyplatiť zálohy dodávateľom': 'Pay vendor deposits',
+    'Pripraviť obálky s platbami pre dodávateľov': 'Prepare payment envelopes for vendors',
+    'Pripraviť menovky na stoly': 'Prepare table name cards',
+    'Pripraviť svadobnú výzdobu domova / obradu': 'Prepare home / ceremony decor',
+    'Vyzdvihnúť svadobný oblek': 'Pick up wedding suit',
+    'Tretia / finálna skúška šiat (JanVeil ♡)': 'Third / final dress fitting (JanVeil ♡)',
+    'Vybrať snubné prstene zo salónu': 'Pick up wedding rings from salon',
+    'Absolvovať rozlúčku so slobodou': 'Attend bachelor / bachelorette party',
+    'Dohodnúť sa na prevzatí darčekov od hostí (obálky)': 'Plan for receiving guest gifts (envelopes)',
+
+    // 1-2 týždne
+    'Potvrdiť všetky rezervácie (catering, hudba, kvetinár, foto)': 'Confirm all reservations (catering, music, florist, photo)',
+    'Nahlásiť počet porcií catering-u (dospelí, deti, alergie)': 'Notify catering of portions (adults, children, allergies)',
+    'Pripraviť svadobné obálky s platbami pre dodávateľov': 'Prepare wedding envelopes with vendor payments',
+    'Pripraviť si zoznam čo si zobrať na svadbu': 'Prepare what to bring to the wedding',
+    'Zbaliť si tašku na svadobnú noc': 'Pack bag for wedding night',
+    'Overiť aby cestovné doklady boli platné (svadobná cesta)': 'Verify travel documents are valid (honeymoon)',
+    'Vybrať dekor pre obrad, auto, obradnú sálu': 'Choose decor for ceremony, car, ceremony hall',
+    'Ostatný nákup (sviečky, obrúsky, maličkosti)': 'Other shopping (candles, napkins, small items)',
+    'Vyskúšať svadobné šaty s kompletnými doplnkami': 'Try on wedding dress with all accessories',
+    'Napísať a zaučiť svadobné rituály (ak treba)': 'Write and rehearse wedding rituals (if applicable)',
+
+    // 1 týždeň
+    'Potvrdiť čas a miesto skúšky obradu': 'Confirm ceremony rehearsal time and place',
+    'Finálne platby dodávateľom': 'Final payments to vendors',
+    'Skúška obradu (civilný / cirkevný)': 'Ceremony rehearsal (civil / religious)',
+    'Manikúra, pedikúra': 'Manicure, pedicure',
+    'Kúpiť darček pre mamu, otca, svedkov, družičky': 'Buy gifts for mom, dad, witnesses, bridesmaids',
+    'Potvrdiť si harmonogram s fotografom a kameramanom': 'Confirm schedule with photographer and videographer',
+    'Objednať si ubytovanie na svadobnú noc': 'Book accommodation for wedding night',
+    'Pripraviť si playlist na obed, tanec, polnoc': 'Prepare playlist for dinner, dance, midnight',
+    'Doriešiť detaily s moderátorom / starejším': 'Finalize details with MC / toastmaster',
+
+    // 1-2 dni
+    'Vyzdvihnúť si svadobné šaty (JanVeil ♡)': 'Pick up wedding dress (JanVeil ♡)',
+    'Vyzdvihnúť si svadobnú kyticu, kvety': 'Pick up bridal bouquet, flowers',
+    'Vyzdvihnúť si svadobnú tortu (alebo potvrdiť doručenie)': 'Pick up wedding cake (or confirm delivery)',
+    'Dohliadnuť na výzdobu obradnej sály a priestorov hostiny': 'Supervise decoration of ceremony and reception venues',
+    'Pripraviť si všetky doklady, prstene, obálky': 'Prepare all documents, rings, envelopes',
+    'Pripraviť si zoznam kontaktov dodávateľov pre svedkov': 'Prepare vendor contact list for witnesses',
+    'Predsvadobný večer — pokojná večera v rodinnom kruhu': 'Pre-wedding evening — quiet dinner with family',
+    'Dostatočný spánok!': 'Get enough sleep!',
+
+    // Deň D
+    'Raňajky — ľahké, zdravé': 'Breakfast — light, healthy',
+    'Príchod kaderníčky a vizážistky': 'Hairstylist and makeup artist arrive',
+    'Obliekanie svadobných šiat (JanVeil ♡)': 'Put on wedding dress (JanVeil ♡)',
+    'Fotografovanie prípravy nevesty': 'Photograph bride preparation',
+    'Odchod na obrad': 'Leave for ceremony',
+    'Svadobný obrad': 'Wedding ceremony',
+    'Skupinové fotky po obrade': 'Group photos after ceremony',
+    'Presun na miesto hostiny': 'Transfer to reception venue',
+    'Príchod hostí na hostinu': 'Guests arrive at reception',
+    'Svadobná hostina, tance, zábava': 'Reception, dancing, fun',
+    'Užiť si svoj deň!': 'Enjoy your day!',
+
+    // === DOKUMENTY ===
+    'Občiansky preukaz (oboch snúbencov)': 'ID card (both partners)',
+    'Rodný list (originál, nie starší ako 3 mesiace)': 'Birth certificate (original, not older than 3 months)',
+    'Žiadosť o uzavretie manželstva (matrika)': 'Marriage application (registry)',
+    'Doklad o štátnom občianstve (ak treba)': 'Proof of citizenship (if needed)',
+    'Potvrdenie o spôsobilosti uzavrieť manželstvo (cudzinec)': 'Certificate of no impediment (foreigners)',
+    'Úmrtný list bývalého manžela/ky (ak vdova/vdovec)': 'Death certificate of former spouse (if widow/widower)',
+    'Právoplatný rozsudok o rozvode (ak rozvedení)': 'Final divorce decree (if divorced)',
+    'Po svadbe: vybaviť nový občiansky s novým priezviskom': 'After wedding: get new ID with new surname',
+    'Po svadbe: nový cestovný pas': 'After wedding: new passport',
+    'Po svadbe: oznámiť zmenu priezviska zamestnávateľovi': 'After wedding: notify employer of name change',
+    'Po svadbe: zmena v banke (účet, karty)': 'After wedding: update bank (account, cards)',
+    'Po svadbe: zmena u poisťovní (zdravotná, životná, auto)': 'After wedding: update insurance (health, life, car)',
+    'Po svadbe: zmena na daňovom úrade': 'After wedding: update with tax office',
+    'Po svadbe: zmena na sociálnej poisťovni': 'After wedding: update social security',
+    'Po svadbe: zmena v katastri (ak vlastníte nehnuteľnosť)': 'After wedding: update land registry (if property owner)',
+
+    // === TIMELINE UDALOSTI ===
+    'Prichádza kaderníčka a vizážistka': 'Hairstylist and makeup artist arrive',
+    'Fotky nevesty a príprav': 'Bride preparation photos',
+    'Obrad': 'Ceremony',
+    'Hostina - príchod hostí': 'Reception - guests arriving',
+    'Obed / Prvý chod': 'Lunch / First course',
+    'Prvý tanec novomanželov': 'First dance',
+    'Krájanie torty': 'Cake cutting',
+    'Odhadzovanie kytice': 'Bouquet toss',
+    'Polnočné prekvapenie': 'Midnight surprise',
+
+    // === ROZPOČET KATEGÓRIE ===
+    'Miesto a catering': 'Venue and catering',
+    'Svadobné šaty a oblek': 'Wedding dress and suit',
+    'Fotograf a kameraman': 'Photographer and videographer',
+    'Hudba a zábava': 'Music and entertainment',
+    'Kvety a výzdoba': 'Flowers and decoration',
+    'Snubné prstene': 'Wedding rings',
+    'Torta a sladkosti': 'Cake and sweets',
+    'Oznámenia a pozvánky': 'Announcements and invitations',
+
+    // === GUEST strana / typ / meal / rsvp ===
+    'Nevesta': 'Bride',
+    'Ženích': 'Groom',
+    'Spoločné': 'Joint',
+    'Dospelý': 'Adult',
+    'Dieťa': 'Child',
+    'Celá porcia': 'Full portion',
+    'Polovičná porcia': 'Half portion',
+    'Bez jedla': 'No meal',
+    'Čaká sa': 'Pending',
+    'Potvrdená': 'Confirmed',
+    'Odmietol': 'Declined',
+    'Okrúhly': 'Round',
+    'Obdĺžnikový': 'Rectangular',
+    'Rovný': 'Square',
+
+    // === CHÝBAJÚCE ÚLOHY CHECKLISTU ===
+    'Definitívny zoznam hostí (oznámiť prevádzkarovi)': 'Final guest list (inform the venue)',
+    'Dodať podklady na tvorbu oznámení (texty, fotky)': 'Provide materials for announcements (texts, photos)',
+    'Dohodnúť catering a podávanie nápojov': 'Arrange catering and drink service',
+    'Dohodnúť stretnutie so zodpovednou osobou v priestoroch': 'Arrange meeting with venue contact',
+    'Dohodnúť výzdobu a osvetlenie': 'Arrange decoration and lighting',
+    'Dohodnúť výzdobu a časový harmonogram': 'Arrange decoration and timeline',
+    'Dohodnúť časový harmonogram podávania chodov': 'Arrange meal serving schedule',
+    'Finálna skúška svadobných šiat': 'Final wedding dress fitting',
+    'Finálny zoznam pozvaných hostí': 'Final invited guest list',
+    'Finálny zoznam pre ubytovanie': 'Final accommodation list',
+    'Konečný program svadby a časový harmonogram': 'Final wedding program and schedule',
+    'Kúpiť / dohodnúť šaty pre družičky': 'Buy / arrange bridesmaids\' dresses',
+    'Kúpiť / vyrobiť dary pre rodičov': 'Buy / make gifts for parents',
+    'Kúpiť darček pre družičky': 'Buy gifts for bridesmaids',
+    'Kúpiť darčeky pre hostí': 'Buy gifts for guests',
+    'Kúpiť doplnky (poháre, podbradníky, bublifuky, balóny)': 'Buy accessories (glasses, bibs, bubbles, balloons)',
+    'Kúpiť doplnky a topánky k popolnočným šatám': 'Buy accessories and shoes for evening dress',
+    'Kúpiť doplnky k šatám (pančuchy, kabelka, šperky)': 'Buy accessories for dress (stockings, purse, jewelry)',
+    'Kúpiť popolnočné oblečenie pre nevestu aj ženícha': 'Buy evening outfits for bride and groom',
+    'Kúpiť svadobné doplnky (kniha hostí, vankúšik na obrúčky, konfety)': 'Buy wedding accessories (guest book, ring pillow, confetti)',
+    'Kúpiť svadobné topánky': 'Buy wedding shoes',
+    'Kúpiť topánky k obleku': 'Buy shoes for the suit',
+    'Možnosti zábavy pre deti, detský kútik': 'Entertainment options for kids, kids corner',
+    'Nachystať oblečenie pre nevestu': 'Prepare bride\'s outfit',
+    'Nachystať oblečenie pre ženícha': 'Prepare groom\'s outfit',
+    'Nachystať popolnočné oblečenie pre nevestu aj ženícha': 'Prepare evening outfits for bride and groom',
+    'Naplánovať ochutnávku svadobného menu (degustácia)': 'Schedule wedding menu tasting',
+    'Naplánovať posedenie na večer pred svadbou': 'Plan gathering on evening before wedding',
+    'Naplánovať spôsob rozdávania darčekov': 'Plan how to distribute guest gifts',
+    'Naplánovať zábavné aktivity': 'Plan entertainment activities',
+    'Navštíviť cestovné agentúry (svadobná cesta)': 'Visit travel agencies (honeymoon)',
+    'Objednať Candy bar': 'Order Candy bar',
+    'Objednať fotostenu a rekvizity na fotenie': 'Order photo wall and props',
+    'Objednať kartóny na výslužky': 'Order takeaway boxes',
+    'Objednať kyticu': 'Order bouquet',
+    'Objednať obrúčky': 'Order rings',
+    'Objednať oznámenia a pozvánky': 'Order announcements and invitations',
+    'Objednať slané občerstvenie (pagáče, chlebíčky)': 'Order savory snacks (pastries, sandwiches)',
+    'Objednať svadobnú cestu': 'Book honeymoon',
+    'Objednať svadobnú tortu': 'Order wedding cake',
+    'Objednať tanečný kurz': 'Book dance course',
+    'Objednať výzdobu na auto': 'Order car decoration',
+    'Objednať zákusky': 'Order desserts',
+    'Oznámiť hosťom presné inštrukcie': 'Send guests exact instructions',
+    'Oznámiť pokyny svedkom': 'Send instructions to witnesses',
+    'Oznámiť ubytovaným hosťom adresy a časy': 'Send accommodation guests addresses and times',
+    'Platby dodávateľom': 'Vendor payments',
+    'Poslať oznámenia a pozvánky': 'Send announcements and invitations',
+    'Poslať zoznam skladieb DJ / kapele': 'Send playlist to DJ / band',
+    'Potvrdiť účasť hostí (RSVP)': 'Confirm guest attendance (RSVP)',
+    'Preveriť rezerváciu - DJ, hudba obrad, hudba hostina': 'Confirm reservation - DJ, ceremony and reception music',
+    'Preveriť rezerváciu - doprava, svadobné auto': 'Confirm reservation - transportation, wedding car',
+    'Preveriť rezerváciu - fotograf, kameraman': 'Confirm reservation - photographer, videographer',
+    'Preveriť rezerváciu - kaderníčka, vizážistka': 'Confirm reservation - hairstylist, makeup artist',
+    'Preveriť rezerváciu - kostol / matrika': 'Confirm reservation - church / registry',
+    'Preveriť rezerváciu - kvety a výzdoba': 'Confirm reservation - flowers and decoration',
+    'Preveriť rezerváciu - priestory a ubytovanie': 'Confirm reservation - venue and accommodation',
+    'Preveriť rezerváciu - starejší, odobierka / čepčenie': 'Confirm reservation - MC, bride farewell ceremony',
+    'Preveriť rezerváciu - svadobné šaty (JanVeil ♡)': 'Confirm reservation - wedding dress (JanVeil ♡)',
+    'Preveriť rezerváciu - torty, zákusky, občerstvenie, catering': 'Confirm reservation - cakes, desserts, snacks, catering',
+    'Prieskum cukrárov / pekární': 'Research bakers / bakeries',
+    'Prieskum kaderníčok': 'Research hairstylists',
+    'Prieskum kvetinárstiev / dizajnérov výzdoby': 'Research florists / decoration designers',
+    'Prieskum svadobných hier a súťaží': 'Research wedding games and activities',
+    'Prieskum vizážistiek': 'Research makeup artists',
+    'Pripraviť "veci so sebou" — drogéria (deodorant, lak, parfém)': 'Prepare "things to bring" — toiletries (deodorant, hairspray, perfume)',
+    'Pripraviť dary pre hostí': 'Prepare gifts for guests',
+    'Pripraviť harmonogram s programom': 'Prepare schedule with program',
+    'Pripraviť líčidlá': 'Prepare makeup',
+    'Pripraviť náhradné topánky': 'Prepare backup shoes',
+    'Pripraviť poďakovanie pre rodičov': 'Prepare thank-you speech for parents',
+    'Pripraviť výslužky': 'Prepare takeaway portions',
+    'Pripraviť zasadací poriadok': 'Prepare seating plan',
+    'Pripraviť šitie (núdzový set)': 'Prepare sewing kit (emergency)',
+    'Rezervovať kaderníčku': 'Book hairstylist',
+    'Rezervovať súbor na odobierku/odčepčenie': 'Book music group for bride farewell',
+    'Rezervovať termín na výrobu torty': 'Book cake production date',
+    'Rezervovať vizážistku': 'Book makeup artist',
+    'Rezervácia termínu - kytica a výzdoba': 'Reservation - bouquet and decoration',
+    'Rozlúčka so slobodou': 'Bachelor / Bachelorette party',
+    'Rozpis svadobného dňa (podrobný časový harmonogram)': 'Wedding day schedule (detailed timeline)',
+    'Skontrolovať doklady': 'Check documents',
+    'Skrášľovacie procedúry (solárium, vlasové kúry, pleť)': 'Beauty treatments (tanning, hair care, skin)',
+    'Skúška svadobného makeupu': 'Wedding makeup trial',
+    'Skúška svadobného účesu': 'Wedding hairstyle trial',
+    'Skúška svadobných šiat (finálna)': 'Wedding dress fitting (final)',
+    'Spoveď (cirkevný sobáš)': 'Confession (religious wedding)',
+    'Svadobná manikúra a pedikúra': 'Wedding manicure and pedicure',
+    'Užiť si najkrajší deň života ♡': 'Enjoy the most beautiful day of your life ♡',
+    'Vybrať kyticu': 'Choose bouquet',
+    'Vybrať náramky pre družičky, košík pre malú družičku': 'Choose bridesmaid bracelets, flower girl basket',
+    'Vybrať obrúčky': 'Choose rings',
+    'Vybrať pieseň na svadobný tanec': 'Choose song for first dance',
+    'Vybrať spôsob odobierky / čepčenia (tradičná svadba)': 'Choose style of bride farewell (traditional)',
+    'Vybrať svadobné menu / detské menu / špeciálne diéty': 'Choose wedding menu / children menu / special diets',
+    'Vybrať termín rozlúčky so slobodou': 'Set date for bachelor/bachelorette party',
+    'Vybrať typ svadobnej torty': 'Choose wedding cake type',
+    'Vybrať štýl a farbu šiat pre družičky': 'Choose bridesmaids\' dress style and color',
+    'Vybrať štýl a farby svadobnej výzdoby': 'Choose wedding decoration style and colors',
+    'Vychladiť alkohol': 'Chill alcohol',
+    'Vyrobiť / objednať vlastné etikety na alkohol': 'Make / order custom alcohol labels',
+    'Vytlačiť program svadby (pre družičky)': 'Print wedding program (for bridesmaids)',
+    'Vytvoriť a objednať menovky': 'Create and order name cards',
+    'Vytvoriť zoznam alkoholu (podľa hostí)': 'Create alcohol list (based on guests)',
+    'Vytvoriť zoznam hostí na ubytovanie': 'Create accommodation guest list',
+    'Vyzdobiť auto': 'Decorate the car',
+    'Vyzdobiť priestory': 'Decorate the venue',
+    'Vyzdvihnúť kyticu, kvety do vlasov, pierka': 'Pick up bouquet, hair flowers, boutonnieres',
+    'Vyzdvihnúť občerstvenie': 'Pick up snacks',
+    'Vyzdvihnúť torty': 'Pick up cakes',
+    'Vyzdvihnúť zákusky': 'Pick up desserts',
+    'Vyzdvihnúť šaty': 'Pick up the dress',
+    'Výber a rezervácia svadobného auta': 'Select and book wedding car',
+    'Výber oznámení a pozvánok': 'Select announcements and invitations',
+    'Výzdoba domu / bytu (interiér, exteriér)': 'Home decoration (interior, exterior)',
+    'Zabezpečiť doklady na vycestovanie (svadobná cesta)': 'Prepare travel documents (honeymoon)',
+    'Zabezpečiť dopravu (od obradu na miesto hostiny)': 'Arrange transportation (from ceremony to reception)',
+    'Zabezpečiť dopravu pre ubytovaných hostí': 'Arrange transportation for accommodation guests',
+    'Zabezpečiť krabičku/truhlicu na peniaze a dary': 'Prepare box for money and gifts',
+    'Zabezpečiť nealkoholické nápoje': 'Arrange non-alcoholic drinks',
+    'Zabezpečiť tvrdý alkohol / domáci alkohol': 'Arrange spirits / homemade alcohol',
+    'Zabezpečiť uskladnenie a vychladenie nápojov': 'Arrange drink storage and cooling',
+    'Zabezpečiť víno a pivo': 'Arrange wine and beer',
+    'Zadeliť presné úlohy družičkám': 'Assign exact tasks to bridesmaids',
+    'Zadeliť presné úlohy rodičom': 'Assign exact tasks to parents',
+    'Zaniesť všetky veci na miesto konania': 'Bring all items to venue',
+    'Zistiť možnosti uloženia stolov (pre zasadací poriadok)': 'Check table layout options (for seating plan)',
+    'Zistiť špeciálne diéty pozvaných hostí': 'Check invited guests\' special diets',
+  };
+
+  // Reverse dictionary pre EN → SK
+  const reverseDictionary = Object.fromEntries(
+    Object.entries(dataDictionary).map(([sk, en]) => [en, sk])
+  );
+
+  // Prepnutie jazyka — automaticky preloží všetky dáta
+  const switchLanguage = (newLang) => {
+    if (newLang === lang) return;
+    track('language_changed', { lang: newLang });
+
+    // Smer prekladu
+    const translate = newLang === 'en'
+      ? (text) => dataDictionary[text] || text
+      : (text) => reverseDictionary[text] || text;
+
+    // Checklist
+    setChecklist(prev => prev.map(item => ({
+      ...item,
+      phase: translate(item.phase),
+      task: translate(item.task),
+    })));
+
+    // Expenses
+    setExpenses(prev => prev.map(e => ({ ...e, category: translate(e.category) })));
+
+    // Timeline
+    setTimeline(prev => prev.map(ev => ({ ...ev, event: translate(ev.event) })));
+
+    // Documents
+    setDocuments(prev => prev.map(d => ({ ...d, task: translate(d.task) })));
+
+    // Guests - side, type, meal, rsvp
+    setGuests(prev => prev.map(g => ({
+      ...g,
+      side: translate(g.side),
+      type: translate(g.type),
+      meal: translate(g.meal),
+      rsvp: translate(g.rsvp),
+    })));
+
+    // Tables - shape
+    setTables(prev => prev.map(t => ({ ...t, shape: translate(t.shape) })));
+
+    // newTask phase (default input)
+    setNewTask(prev => ({ ...prev, phase: translate(prev.phase) }));
+
+    // newGuest defaults
+    setNewGuest(prev => ({
+      ...prev,
+      side: translate(prev.side),
+      type: translate(prev.type),
+      meal: translate(prev.meal),
+      rsvp: translate(prev.rsvp),
+    }));
+
+    // newTable shape
+    setNewTable(prev => ({ ...prev, shape: translate(prev.shape) }));
+
+    // Prepnúť jazyk
+    setLang(newLang);
+  };
+
   const modules = [
-    { id: 'checklist', title: 'Zoznam úloh', desc: 'Všetko čo treba stihnúť, po časovej osi', icon: Calendar, stat: `${completedPct}%` },
-    { id: 'budget', title: 'Rozpočet', desc: 'Sledujte výdavky a držte sa svojho plánu', icon: Wallet, stat: `${totalSpent.toLocaleString('sk-SK')} €` },
-    { id: 'guests', title: 'Hostia', desc: 'Zoznam hostí, stravovanie, alergény', icon: Users, stat: `${confirmedGuests} / ${guests.length}` },
-    { id: 'seating', title: 'Plán sály', desc: 'Rozmiestnite stoly, DJ, bar a parket na mape', icon: Armchair, stat: `${tables.length} ${tables.length === 1 ? 'stôl' : 'stolov'}` },
-    { id: 'timeline', title: 'Harmonogram dňa D', desc: 'Časový rozpis svadobného dňa — hodinu po hodine', icon: Clock, stat: `${timeline.length}` },
-    { id: 'documents', title: 'Doklady a papierovanie', desc: 'Matrika, občiansky, zmena priezviska', icon: FileCheck, stat: `${documentsDone} / ${documents.length}` },
-    { id: 'diary', title: 'Môj denník', desc: 'Myšlienky, nápady, čo sa vám páči', icon: BookOpen, stat: diary ? '✓' : '' },
+    { id: 'checklist', title: t('nav.checklist'), desc: lang === 'en' ? 'Everything to do, along a timeline' : 'Všetko čo treba stihnúť, po časovej osi', icon: Calendar, stat: `${completedPct}%` },
+    { id: 'budget', title: t('nav.budget'), desc: lang === 'en' ? 'Track expenses and stay on plan' : 'Sledujte výdavky a držte sa svojho plánu', icon: Wallet, stat: `${totalSpent.toLocaleString(lang === 'en' ? 'en-US' : 'sk-SK')} €` },
+    { id: 'guests', title: t('nav.guests'), desc: lang === 'en' ? 'Guest list, meals, allergens' : 'Zoznam hostí, stravovanie, alergény', icon: Users, stat: `${confirmedGuests} / ${guests.length}` },
+    { id: 'seating', title: t('nav.seating'), desc: lang === 'en' ? 'Arrange tables, DJ, bar, dance floor on a map' : 'Rozmiestnite stoly, DJ, bar a parket na mape', icon: Armchair, stat: lang === 'en' ? `${tables.length} ${tables.length === 1 ? 'table' : 'tables'}` : `${tables.length} ${tables.length === 1 ? 'stôl' : 'stolov'}` },
+    { id: 'timeline', title: t('nav.timeline'), desc: lang === 'en' ? 'Hour by hour plan for the wedding day' : 'Časový rozpis svadobného dňa — hodinu po hodine', icon: Clock, stat: `${timeline.length}` },
+    { id: 'documents', title: t('nav.documents'), desc: lang === 'en' ? 'Registry, ID, name change' : 'Matrika, občiansky, zmena priezviska', icon: FileCheck, stat: `${documentsDone} / ${documents.length}` },
+    { id: 'diary', title: t('nav.diary'), desc: lang === 'en' ? 'Thoughts, ideas, what you love' : 'Myšlienky, nápady, čo sa vám páči', icon: BookOpen, stat: diary ? '✓' : '' },
+    { id: 'faq', title: t('nav.faq'), desc: lang === 'en' ? 'Answers to the most common questions' : 'Odpovede na otázky ktoré dostávame v salóne', icon: AlertCircle, stat: '' },
   ];
 
-  const phases = ['12+ mesiacov pred', '9-12 mesiacov pred', '6-9 mesiacov pred', '3-6 mesiacov pred', '1-3 mesiace pred', '2-4 týždne pred', '1-2 týždne pred', '1 týždeň pred', '1-2 dni pred', 'Deň D'];
+  const phases = lang === 'en'
+    ? ['12+ months before', '9-12 months before', '6-9 months before', '3-6 months before', '1-3 months before', '2-4 weeks before', '1-2 weeks before', '1 week before', '1-2 days before', 'Wedding Day']
+    : ['12+ mesiacov pred', '9-12 mesiacov pred', '6-9 mesiacov pred', '3-6 mesiacov pred', '1-3 mesiace pred', '2-4 týždne pred', '1-2 týždne pred', '1 týždeň pred', '1-2 dni pred', 'Deň D'];
 
   const getInitials = (name) => {
     if (!name) return '?';
@@ -975,10 +2023,10 @@ export default function App() {
       const q = guestSearch.toLowerCase().trim();
       list = list.filter(g => g.name.toLowerCase().includes(q) || (g.allergies && g.allergies.toLowerCase().includes(q)));
     }
-    if (guestFilter === 'confirmed') list = list.filter(g => g.rsvp === 'Potvrdená');
-    else if (guestFilter === 'pending') list = list.filter(g => g.rsvp === 'Čaká sa');
-    else if (guestFilter === 'rejected') list = list.filter(g => g.rsvp === 'Odmietol');
-    else if (guestFilter === 'children') list = list.filter(g => g.type === 'Dieťa');
+    if (guestFilter === 'confirmed') list = list.filter(g => (g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed'));
+    else if (guestFilter === 'pending') list = list.filter(g => (g.rsvp === 'Čaká sa' || g.rsvp === 'Pending'));
+    else if (guestFilter === 'rejected') list = list.filter(g => (g.rsvp === 'Odmietol' || g.rsvp === 'Declined'));
+    else if (guestFilter === 'children') list = list.filter(g => (g.type === 'Dieťa' || g.type === 'Child'));
     else if (guestFilter === 'allergies') list = list.filter(g => g.allergies);
     return list;
   }, [guests, guestSearch, guestFilter]);
@@ -1012,6 +2060,69 @@ export default function App() {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  };
+
+  // === ŠABLÓNY SVADIEB (data) ===
+  const weddingTemplates = [
+    {
+      id: 'classic',
+      name: lang === 'en' ? 'Classic Chateau Wedding' : 'Klasická zámocká svadba',
+      desc: lang === 'en' ? '80-100 guests · traditional · elegant' : '80-100 hostí · tradičná · elegantná',
+      icon: '🏛️',
+      budget: 18000,
+      expenses: [
+        { id: 1, category: lang === 'en' ? 'Venue & catering' : 'Miesto a catering', planned: 8500, spent: 0 },
+        { id: 2, category: lang === 'en' ? 'Wedding dress & suit' : 'Svadobné šaty a oblek', planned: 2500, spent: 0 },
+        { id: 3, category: lang === 'en' ? 'Photographer & videographer' : 'Fotograf a kameraman', planned: 2200, spent: 0 },
+        { id: 4, category: lang === 'en' ? 'Live music' : 'Živá kapela', planned: 1800, spent: 0 },
+        { id: 5, category: lang === 'en' ? 'Flowers & classic decor' : 'Kvety a klasická výzdoba', planned: 1500, spent: 0 },
+        { id: 6, category: lang === 'en' ? 'Wedding rings' : 'Snubné prstene', planned: 1500, spent: 0 },
+      ],
+    },
+    {
+      id: 'boho',
+      name: lang === 'en' ? 'Boho Garden Wedding' : 'Boho svadba v záhrade',
+      desc: lang === 'en' ? '40-60 guests · bohemian · natural' : '40-60 hostí · bohémska · prírodná',
+      icon: '🌿',
+      budget: 12000,
+      expenses: [
+        { id: 1, category: lang === 'en' ? 'Venue & catering' : 'Miesto a catering', planned: 5500, spent: 0 },
+        { id: 2, category: lang === 'en' ? 'Wedding dress & suit' : 'Svadobné šaty a oblek', planned: 2000, spent: 0 },
+        { id: 3, category: lang === 'en' ? 'Photographer' : 'Fotograf', planned: 1500, spent: 0 },
+        { id: 4, category: lang === 'en' ? 'DJ' : 'DJ', planned: 800, spent: 0 },
+        { id: 5, category: lang === 'en' ? 'Wildflowers & macrame' : 'Lúčne kvety a makramé', planned: 900, spent: 0 },
+        { id: 6, category: lang === 'en' ? 'Wedding rings' : 'Snubné prstene', planned: 1300, spent: 0 },
+      ],
+    },
+    {
+      id: 'modern',
+      name: lang === 'en' ? 'Modern Urban Wedding' : 'Moderná mestská svadba',
+      desc: lang === 'en' ? '100-150 guests · minimalist · stylish' : '100-150 hostí · minimalistická · štýlová',
+      icon: '🏙️',
+      budget: 22000,
+      expenses: [
+        { id: 1, category: lang === 'en' ? 'Venue & catering' : 'Miesto a catering', planned: 11000, spent: 0 },
+        { id: 2, category: lang === 'en' ? 'Wedding dress & suit' : 'Svadobné šaty a oblek', planned: 3000, spent: 0 },
+        { id: 3, category: lang === 'en' ? 'Photo & video team' : 'Foto & video tím', planned: 2500, spent: 0 },
+        { id: 4, category: lang === 'en' ? 'DJ & lighting' : 'DJ & osvetlenie', planned: 1500, spent: 0 },
+        { id: 5, category: lang === 'en' ? 'Minimalist decor' : 'Minimalistická výzdoba', planned: 1200, spent: 0 },
+        { id: 6, category: lang === 'en' ? 'Wedding rings' : 'Snubné prstene', planned: 1800, spent: 0 },
+      ],
+    },
+  ];
+
+  const applyTemplate = (template) => {
+    if (!window.confirm(lang === 'en'
+      ? `This will replace your budget with "${template.name}" values. Continue?`
+      : `Toto prepíše váš rozpočet hodnotami šablóny "${template.name}". Pokračovať?`
+    )) return;
+    setBudgetTotal(template.budget);
+    setExpenses(template.expenses);
+    setShowTemplates(false);
+    track('template_applied', { template: template.id });
+    alert(lang === 'en'
+      ? 'Template applied! Adjust the values to your liking.'
+      : 'Šablóna aplikovaná! Hodnoty si môžete prispôsobiť.');
   };
 
   return (
@@ -1131,6 +2242,15 @@ export default function App() {
 
         .fade-in { animation: fadeIn 0.7s cubic-bezier(0.23, 1, 0.32, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes confetti-fall {
+          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        @keyframes pulse-saved {
+          0% { opacity: 0; transform: translateY(4px); }
+          20%, 80% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-4px); }
+        }
 
         .stagger > * { opacity: 0; animation: fadeIn 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
         .stagger > *:nth-child(1) { animation-delay: 0.05s; }
@@ -1200,22 +2320,40 @@ export default function App() {
 
       <header className="border-b hairline sticky top-0 z-40 backdrop-blur" style={{ backgroundColor: theme === 'dark' ? 'rgba(26, 21, 16, 0.92)' : 'rgba(251, 248, 244, 0.85)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <button onClick={() => setActiveModule('home')} className="flex items-center gap-3 group flex-shrink-0">
-            <div className="w-10 h-10 border border-gold flex items-center justify-center rounded-full group-hover:bg-gold transition-all duration-500">
-              <span className="serif text-lg gold group-hover:text-white transition-colors duration-500">J</span>
-            </div>
-            <div className="text-left hidden sm:block">
-              <div className="serif text-xl tracking-wide" style={{ color: theme === 'dark' ? '#EBE1CF' : '#1E1910' }}>JanVeil</div>
-              <div className="text-[10px] tracking-[0.2em] uppercase gold">Svadobný plánovač</div>
-            </div>
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setActiveModule('home')} className="flex items-center gap-3 group flex-shrink-0">
+              <div className="w-10 h-10 border border-gold flex items-center justify-center rounded-full group-hover:bg-gold transition-all duration-500">
+                <span className="serif text-lg gold group-hover:text-white transition-colors duration-500">J</span>
+              </div>
+              <div className="text-left hidden sm:block">
+                <div className="serif text-xl tracking-wide" style={{ color: theme === 'dark' ? '#EBE1CF' : '#1E1910' }}>JanVeil</div>
+                <div className="text-[10px] tracking-[0.2em] uppercase gold">{lang === "en" ? "Wedding Planner" : "Svadobný plánovač"}</div>
+              </div>
+            </button>
+          </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Language toggle */}
+            <button
+              onClick={() => switchLanguage(lang === 'sk' ? 'en' : 'sk')}
+              className="px-2 py-1 gold hover:opacity-70 transition text-[10px] tracking-[0.2em] uppercase border hairline rounded-full"
+              title={lang === 'sk' ? 'Switch to English' : 'Prepnúť na slovenčinu'}
+            >
+              {lang === 'sk' ? 'EN' : 'SK'}
+            </button>
+
+            {/* Saved indicator */}
+            {showSavedIndicator && (
+              <span className="hidden md:flex items-center gap-1 text-[10px] tracking-wider uppercase gold" style={{ animation: 'pulse-saved 1.5s ease' }}>
+                <Check size={12} /> {lang === 'en' ? 'Saved' : 'Uložené'}
+              </span>
+            )}
+
             {/* Theme toggle */}
             <button
               onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
               className="w-9 h-9 flex items-center justify-center gold hover:opacity-70 transition"
-              title={theme === 'light' ? 'Tmavý režim' : 'Svetlý režim'}
+              title={theme === 'light' ? (lang === 'en' ? 'Dark mode' : 'Tmavý režim') : (lang === 'en' ? 'Light mode' : 'Svetlý režim')}
             >
               {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
             </button>
@@ -1224,20 +2362,20 @@ export default function App() {
             <button
               onClick={generateShareLink}
               className="hidden md:flex text-xs tracking-wider uppercase gold hover:opacity-60 transition items-center gap-1.5"
-              title="Zdieľať s partnerom / rodinou"
+              title={lang === "en" ? "Share with partner / family" : "Zdieľať s partnerom / rodinou"}
             >
-              <Share2 size={14} /> <span className="hidden lg:inline">Zdieľať</span>
+              <Share2 size={14} /> <span className="hidden lg:inline">{t("actions.share")}</span>
             </button>
 
-            <button onClick={() => setShowExport(true)} className="text-xs tracking-wider uppercase gold hover:opacity-60 transition hidden sm:flex items-center gap-1.5"><Download size={14} /> <span className="hidden md:inline">Exportovať</span></button>
-            <button onClick={() => setShowImport(true)} className="text-xs tracking-wider uppercase gold hover:opacity-60 transition hidden sm:flex items-center gap-1.5"><Upload size={14} /> <span className="hidden md:inline">Načítať</span></button>
+            <button onClick={() => setShowExport(true)} className="text-xs tracking-wider uppercase gold hover:opacity-60 transition hidden sm:flex items-center gap-1.5"><Download size={14} /> <span className="hidden md:inline">{t("actions.export")}</span></button>
+            <button onClick={() => setShowImport(true)} className="text-xs tracking-wider uppercase gold hover:opacity-60 transition hidden sm:flex items-center gap-1.5"><Upload size={14} /> <span className="hidden md:inline">{t("actions.import")}</span></button>
           </div>
         </div>
 
-        {/* Mobile nav — horizontálny scroll tabs */}
+        {/* Mobile nav — horizontálny scroll tabs vycentrované */}
         {activeModule !== 'home' && (
           <div className="lg:hidden border-t hairline overflow-x-auto">
-            <div className="flex items-center gap-1 px-4 py-2 min-w-max">
+            <div className="flex items-center justify-center gap-1 px-4 py-2 min-w-max mx-auto">
               {modules.map(m => {
                 const Icon = m.icon;
                 return (
@@ -1255,11 +2393,14 @@ export default function App() {
         )}
       </header>
 
-      {/* === SIDEBAR (desktop only, visible when not on home) === */}
+      {/* === SIDEBAR — iba na desktop === */}
       {activeModule !== 'home' && (
-        <aside className="hidden lg:block fixed left-0 top-[73px] bottom-0 w-64 border-r hairline overflow-y-auto z-30" style={{ backgroundColor: theme === 'dark' ? '#1A1510' : '#F2EDE3' }}>
+        <aside
+          className="hidden lg:block fixed left-0 top-[73px] bottom-0 w-64 border-r hairline overflow-y-auto z-30"
+          style={{ backgroundColor: theme === 'dark' ? '#1A1510' : '#F2EDE3' }}
+        >
           <div className="p-5">
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4 px-3">Navigácia</p>
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4 px-3">{t('nav.navigation')}</p>
             <nav className="space-y-1">
               <button
                 onClick={() => setActiveModule('home')}
@@ -1267,7 +2408,7 @@ export default function App() {
                 style={{ color: theme === 'dark' ? '#C8B89A' : '#4A3F2E' }}
               >
                 <Home size={15} className="gold" />
-                <span>Domov</span>
+                <span>{t('nav.home')}</span>
               </button>
               {modules.map(m => {
                 const Icon = m.icon;
@@ -1277,7 +2418,7 @@ export default function App() {
                     key={m.id}
                     onClick={() => setActiveModule(m.id)}
                     className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${isActive ? 'bg-gold text-white shadow-sm' : 'hover:bg-[#EBE1CF]'}`}
-                    style={!isActive ? { color: theme === 'dark' ? '#EBE1CF' : '#1E1910' } : {}}
+                    style={!isActive ? { color: theme === 'dark' ? '#F5EDE0' : '#1E1910' } : {}}
                   >
                     <span className="flex items-center gap-3">
                       <Icon size={15} className={isActive ? 'text-white' : 'gold'} />
@@ -1295,19 +2436,19 @@ export default function App() {
 
             {/* Quick actions */}
             <div className="mt-8 pt-6 border-t hairline">
-              <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3 px-3">Rýchle akcie</p>
+              <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3 px-3">{t('nav.quickActions')}</p>
               <div className="space-y-1">
                 <button
                   onClick={generateShareLink}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-[#EBE1CF] transition gold"
                 >
-                  <Share2 size={13} /> Zdieľať s partnerom
+                  <Share2 size={13} /> {t('actions.shareWithPartner')}
                 </button>
                 <button
                   onClick={() => setShowExport(true)}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs hover:bg-[#EBE1CF] transition gold"
                 >
-                  <Download size={13} /> Exportovať
+                  <Download size={13} /> {t('actions.export')}
                 </button>
               </div>
             </div>
@@ -1315,8 +2456,8 @@ export default function App() {
             {/* CTA v sidebare */}
             <div className="mt-6 p-4 rounded-card border hairline" style={{ background: theme === 'dark' ? 'linear-gradient(135deg, #2A2218, #3D3528)' : 'linear-gradient(135deg, #F5EFE3, #EBE1CF)' }}>
               <Heart size={16} strokeWidth={1.2} className="gold mb-2" />
-              <p className="serif italic text-sm mb-3" style={{ color: theme === 'dark' ? '#EBE1CF' : '#1E1910' }}>
-                Hľadáte šaty?
+              <p className="serif italic text-sm mb-3" style={{ color: theme === 'dark' ? '#F5EDE0' : '#1E1910' }}>
+                {t('hero.findDress')}
               </p>
               <a
                 href="https://www.janveil.sk/svadobne-saty/"
@@ -1324,7 +2465,7 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="block text-center text-[10px] tracking-[0.2em] uppercase border border-gold gold rounded-full py-2 hover:bg-gold hover:text-white transition"
               >
-                Naša kolekcia
+                {t('hero.ourCollection')}
               </a>
             </div>
           </div>
@@ -1336,39 +2477,39 @@ export default function App() {
           <section className="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
             <div className="inline-block mb-8">
               <div className="h-px w-16 bg-gold mx-auto mb-6" />
-              <p className="text-[10px] tracking-[0.35em] uppercase gold">Pretože každý detail má význam</p>
+              <p className="text-[10px] tracking-[0.35em] uppercase gold">{t('hero.tagline')}</p>
             </div>
             <h1 className="serif text-5xl md:text-7xl font-normal leading-tight mb-6" style={{ color: '#1E1910' }}>
-              Váš svadobný deň,<br />
-              <em className="font-normal">premyslený do posledného detailu</em>
+              {t('hero.title1')}<br />
+              <em className="font-normal">{t('hero.title2')}</em>
             </h1>
             <p className="max-w-xl mx-auto text-base leading-relaxed mb-12" style={{ color: '#4A3F2E' }}>
-              Bezplatný plánovač od svadobného salóna JanVeil. Bez registrácie, bez reklám — len priestor pre vašu lásku a vašu víziu.
+              {t('hero.subtitle')}
             </p>
 
             <div className="max-w-xl mx-auto bg-white border hairline rounded-card p-8 md:p-10 mb-4" style={{ boxShadow: '0 4px 24px -8px rgba(176, 141, 87, 0.12)' }}>
               {daysUntil !== null && daysUntil >= 0 ? (
                 <div>
-                  <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">Do vášho veľkého dňa</p>
+                  <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">{t('hero.daysUntil')}</p>
                   <div className="serif text-6xl md:text-7xl font-normal mb-2" style={{ color: '#1E1910' }}>{daysUntil}</div>
-                  <p className="text-sm" style={{ color: '#4A3F2E' }}>{daysUntil === 1 ? 'deň' : daysUntil < 5 ? 'dni' : 'dní'}</p>
+                  <p className="text-sm" style={{ color: '#4A3F2E' }}>{daysUntil === 1 ? t('hero.day') : daysUntil < 5 ? t('hero.days2_4') : t('hero.days5plus')}</p>
                   {coupleName && <p className="serif text-xl mt-4 italic" style={{ color: '#1E1910' }}>{coupleName}</p>}
                   {countdownMessage && (
                     <p className="serif italic text-base mt-5 pt-5 border-t hairline" style={{ color: '#6B5946' }}>
                       {countdownMessage}
                     </p>
                   )}
-                  <button onClick={() => { setWeddingDate(''); setCoupleName(''); }} className="text-xs tracking-wider uppercase gold hover:opacity-60 mt-4">Upraviť</button>
+                  <button onClick={() => { setWeddingDate(''); setCoupleName(''); }} className="text-xs tracking-wider uppercase gold hover:opacity-60 mt-4">{t('hero.edit')}</button>
                 </div>
               ) : (
                 <div>
-                  <p className="text-[10px] tracking-[0.3em] uppercase gold mb-5">Začnime spolu</p>
+                  <p className="text-[10px] tracking-[0.3em] uppercase gold mb-5">{t('hero.startTogether')}</p>
                   <div className="space-y-5">
                     <input type="text" value={coupleName} onChange={(e) => setCoupleName(e.target.value)}
-                      placeholder="Mená mladomanželov (napr. Anna & Martin)"
+                      placeholder={t('hero.coupleNames')}
                       className="w-full border-b hairline py-2 text-center bg-transparent serif text-lg italic"
                       style={{ color: '#1E1910' }} />
-                    <CustomDatePicker value={weddingDate} onChange={setWeddingDate} placeholder="Vyberte dátum svadby" />
+                    <CustomDatePicker value={weddingDate} onChange={setWeddingDate} placeholder={lang === 'en' ? 'Choose wedding date' : 'Vyberte dátum svadby'} lang={lang} />
                   </div>
                 </div>
               )}
@@ -1376,9 +2517,34 @@ export default function App() {
           </section>
 
           <section className="max-w-6xl mx-auto px-6 pb-24">
-            <div className="text-center mb-12">
+            <div className="text-center mb-8">
               <div className="h-px w-12 bg-gold mx-auto mb-5" />
-              <h2 className="serif text-3xl md:text-4xl font-normal" style={{ color: '#1E1910' }}>Vaše nástroje</h2>
+              <h2 className="serif text-3xl md:text-4xl font-normal" style={{ color: '#1E1910' }}>
+                {t('hero.tools')}
+              </h2>
+              {/* Templates CTA */}
+              <button
+                onClick={() => { setShowTemplates(true); track('templates_opened'); }}
+                className="mt-4 inline-flex items-center gap-2 text-[10px] tracking-[0.25em] uppercase gold hover:opacity-70 border hairline rounded-full px-5 py-2 transition"
+              >
+                <SparklesIcon size={12} /> {t('templates.cta')}
+              </button>
+              {/* Urgent tasks indicator */}
+              {urgentTasks.length > 0 && (
+                <button
+                  onClick={() => setActiveModule('checklist')}
+                  className="mt-3 ml-2 inline-flex items-center gap-2 text-[10px] tracking-[0.25em] uppercase border rounded-full px-5 py-2 transition hover:opacity-70"
+                  style={{
+                    color: overdueTasks.length > 0 ? '#B91C1C' : '#D97706',
+                    borderColor: overdueTasks.length > 0 ? '#FCA5A5' : '#FDE68A',
+                    backgroundColor: overdueTasks.length > 0 ? '#FEF2F2' : '#FFFBEB',
+                  }}
+                >
+                  <AlertCircle size={12} /> {lang === 'en'
+                    ? `${urgentTasks.length} urgent task${urgentTasks.length > 1 ? 's' : ''}`
+                    : `${urgentTasks.length} ${urgentTasks.length === 1 ? 'úloha' : urgentTasks.length < 5 ? 'úlohy' : 'úloh'} urgentných`}
+                </button>
+              )}
             </div>
             <div className="grid md:grid-cols-2 gap-5 stagger">
               {modules.map((m) => {
@@ -1396,7 +2562,7 @@ export default function App() {
                       </div>
                       <h3 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>{m.title}</h3>
                       <p className="text-sm leading-relaxed mb-5" style={{ color: '#4A3F2E' }}>{m.desc}</p>
-                      <div className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase gold group-hover:gap-3 transition-all duration-300">Otvoriť <ChevronRight size={14} /></div>
+                      <div className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase gold group-hover:gap-3 transition-all duration-300">{t('hero.open')} <ChevronRight size={14} /></div>
                     </div>
                   </button>
                 );
@@ -1408,8 +2574,8 @@ export default function App() {
           <section className="max-w-6xl mx-auto px-6 pb-16">
             <div className="text-center mb-10">
               <div className="h-px w-12 bg-gold mx-auto mb-5" />
-              <h2 className="serif text-3xl md:text-4xl font-normal" style={{ color: '#1E1910' }}>Objavte šaty JanVeil</h2>
-              <p className="serif italic text-base mt-3" style={{ color: '#6B5946' }}>Ručne šité, z najkrajších látok, pre tie najnáročnejšie nevesty</p>
+              <h2 className="serif text-3xl md:text-4xl font-normal" style={{ color: '#1E1910' }}>{t('hero.discoverDresses')}</h2>
+              <p className="serif italic text-base mt-3" style={{ color: '#6B5946' }}>{t('hero.discoverDressesSub')}</p>
             </div>
             <div className="grid md:grid-cols-2 gap-5">
               <a
@@ -1423,12 +2589,12 @@ export default function App() {
                   <div className="w-12 h-12 rounded-full border hairline flex items-center justify-center mb-5 group-hover:border-gold group-hover:rotate-12 transition-all duration-500">
                     <ImageIcon size={20} strokeWidth={1.2} className="gold" />
                   </div>
-                  <h3 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>Naša kolekcia</h3>
+                  <h3 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>{t('hero.ourCollectionCard')}</h3>
                   <p className="text-sm leading-relaxed mb-5" style={{ color: '#4A3F2E' }}>
-                    Pozrite si výber svadobných šiat — klasické korzetové, A-čkové, bohemské či minimalistické modely.
+                    {t('hero.ourCollectionDesc')}
                   </p>
                   <div className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase gold group-hover:gap-3 transition-all duration-300">
-                    Pozrieť kolekciu <ChevronRight size={14} />
+                    {t('hero.viewCollection')} <ChevronRight size={14} />
                   </div>
                 </div>
               </a>
@@ -1442,12 +2608,12 @@ export default function App() {
                   <div className="w-12 h-12 rounded-full border hairline flex items-center justify-center mb-5 group-hover:border-gold group-hover:rotate-12 transition-all duration-500">
                     <SparklesIcon size={20} strokeWidth={1.2} className="gold" />
                   </div>
-                  <h3 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>Aký štýl svadby vám sadne?</h3>
+                  <h3 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>{t('hero.whichStyle')}</h3>
                   <p className="text-sm leading-relaxed mb-5" style={{ color: '#4A3F2E' }}>
-                    Krátky kvíz (5 otázok) — zistíme váš svadobný štýl a odporučíme vhodné šaty z našej kolekcie.
+                    {t('hero.quizDesc')}
                   </p>
                   <div className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase gold group-hover:gap-3 transition-all duration-300">
-                    Začať kvíz <ChevronRight size={14} />
+                    {t('hero.startQuiz')} <ChevronRight size={14} />
                   </div>
                 </div>
               </button>
@@ -1459,11 +2625,11 @@ export default function App() {
               <div className="shimmer absolute inset-0 pointer-events-none" />
               <div className="relative">
                 <Heart size={20} strokeWidth={1} className="gold mx-auto mb-5" />
-                <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">Svadobný salón JanVeil</p>
-                <h3 className="serif text-3xl md:text-4xl font-normal mb-5 italic" style={{ color: '#1E1910' }}>"Pretože tvoja láska si zaslúži dokonalé šaty."</h3>
-                <p className="text-sm leading-relaxed max-w-lg mx-auto mb-8" style={{ color: '#4A3F2E' }}>Keď bude čas vybrať svadobné šaty, radi vás privítame v našom salóne v Zlatých Moravciach.</p>
+                <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">{t('hero.salonTag')}</p>
+                <h3 className="serif text-3xl md:text-4xl font-normal mb-5 italic" style={{ color: '#1E1910' }}>{t('hero.motto')}</h3>
+                <p className="text-sm leading-relaxed max-w-lg mx-auto mb-8" style={{ color: '#4A3F2E' }}>{t('hero.mottoSub')}</p>
                 <a href="https://www.janveil.sk/skuska-svadobnych-siat/#termin" target="_blank" rel="noopener noreferrer"
-                  className="inline-block border border-gold gold px-8 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition-all duration-500">Objednať skúšku</a>
+                  className="inline-block border border-gold gold px-8 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition-all duration-500">{t('hero.bookFitting')}</a>
               </div>
             </div>
           </section>
@@ -1475,11 +2641,11 @@ export default function App() {
       )}
 
       {activeModule === 'checklist' && (
-        <ModuleShell title="Zoznam úloh" subtitle="Každý detail v správny čas" onBack={() => setActiveModule('home')}>
+        <ModuleShell title={t('nav.checklist')} subtitle={t('checklist.subtitle')} lang={lang} onBack={() => setActiveModule('home')}>
           {/* MAIN PROGRESS with percentage */}
           <div className="mb-10 bg-white border hairline rounded-card p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs tracking-wider uppercase gold">Splnené</span>
+              <span className="text-xs tracking-wider uppercase gold">{t("checklist.completed")}</span>
               <div className="flex items-baseline gap-3">
                 <span className="serif text-4xl font-normal gold">{completedPct}%</span>
                 <span className="text-sm" style={{ color: '#6B5946' }}>{completedTasks} / {checklist.length}</span>
@@ -1526,21 +2692,21 @@ export default function App() {
                   {isOpen && (
                     <div className="px-6 pb-6 border-t hairline pt-4 fade-in">
                       {/* DRESS COLLECTION TEASER — zobrazí sa v fáze keď sa vyberajú šaty */}
-                      {(phase === '9-12 mesiacov pred' || phase === '6-9 mesiacov pred') && (
+                      {(phase === '9-12 mesiacov pred' || phase === '9-12 months before' || phase === '6-9 mesiacov pred' || phase === '6-9 months before') && (
                         <div className="mb-5 rounded-card overflow-hidden border border-gold" style={{ background: 'linear-gradient(135deg, #F5EFE3, #EBE1CF)' }}>
                           <div className="p-5 md:p-6">
                             <div className="flex items-start gap-4 flex-wrap">
                               <div className="flex-1 min-w-[240px]">
                                 <p className="text-[10px] tracking-[0.3em] uppercase gold mb-2 flex items-center gap-2">
-                                  <Heart size={11} strokeWidth={1.5} /> Od salónu JanVeil
+                                  <Heart size={11} strokeWidth={1.5} /> {lang === "en" ? "From JanVeil salon" : "Od salónu JanVeil"}
                                 </p>
                                 <h4 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>
-                                  {phase === '9-12 mesiacov pred' ? 'Čas vybrať svadobné šaty' : 'Ešte nie ste rozhodnutá?'}
+                                  {(phase === '9-12 mesiacov pred' || phase === '9-12 months before') ? (lang === 'en' ? 'Time to choose a wedding dress' : 'Čas vybrať svadobné šaty') : (lang === 'en' ? 'Not decided yet?' : 'Ešte nie ste rozhodnutá?')}
                                 </h4>
                                 <p className="text-sm leading-relaxed mb-4" style={{ color: '#4A3F2E' }}>
-                                  {phase === '9-12 mesiacov pred'
-                                    ? 'V tomto období väčšina neviest rezervuje šaty. Pozrite si našu kolekciu — každý kúsok je ručne šitý a môžete si ho vyskúšať osobne.'
-                                    : 'Ak ste ešte nevybrali šaty, nie je neskoro. Pozrite si našu kolekciu alebo si objednajte nezáväznú skúšku.'}
+                                  {(phase === '9-12 mesiacov pred' || phase === '9-12 months before')
+                                    ? (lang === 'en' ? 'Most brides reserve dresses during this period. Browse our collection — each piece is hand-sewn and you can try it on in person.' : 'V tomto období väčšina neviest rezervuje šaty. Pozrite si našu kolekciu — každý kúsok je ručne šitý a môžete si ho vyskúšať osobne.')
+                                    : (lang === 'en' ? 'If you have not chosen a dress yet, it is not too late. Browse our collection or book a no-commitment fitting.' : 'Ak ste ešte nevybrali šaty, nie je neskoro. Pozrite si našu kolekciu alebo si objednajte nezáväznú skúšku.')}
                                 </p>
                                 <div className="flex gap-2 flex-wrap">
                                   <a
@@ -1549,7 +2715,7 @@ export default function App() {
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-2 bg-gold text-white px-5 py-2.5 rounded-full text-[10px] tracking-[0.2em] uppercase hover:opacity-90 transition"
                                   >
-                                    <ImageIcon size={12} /> Naša kolekcia
+                                    <ImageIcon size={12} /> {lang === "en" ? "Our collection" : "Naša kolekcia"}
                                   </a>
                                   <a
                                     href="https://www.janveil.sk/skuska-svadobnych-siat/#termin"
@@ -1557,7 +2723,7 @@ export default function App() {
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-2 border border-gold gold px-5 py-2.5 rounded-full text-[10px] tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition"
                                   >
-                                    Objednať skúšku
+                                    {lang === "en" ? "Book fitting" : "Objednať skúšku"}
                                   </a>
                                 </div>
                               </div>
@@ -1569,6 +2735,7 @@ export default function App() {
                       <ul className="space-y-1">
                         {items.map(t => {
                           const isJanVeilTask = t.task.includes('JanVeil');
+                          const urgency = getTaskUrgency(t);
                           return (
                             <React.Fragment key={t.id}>
                               <li className="flex items-center gap-4 py-2 px-2 group rounded hover:bg-[#F5EFE3] transition">
@@ -1577,6 +2744,35 @@ export default function App() {
                                   {t.done && <Check size={12} className="text-white" strokeWidth={2.5} />}
                                 </button>
                                 <span className={`flex-1 text-sm transition ${t.done ? 'line-through opacity-40' : ''}`} style={{ color: '#1E1910' }}>{t.task}</span>
+
+                                {/* Urgency badge */}
+                                {urgency && (
+                                  <span
+                                    className={`text-[9px] tracking-wider uppercase px-2 py-0.5 rounded-full whitespace-nowrap ${
+                                      urgency.level === 'overdue' ? 'bg-red-100 text-red-700' :
+                                      urgency.level === 'today' ? 'bg-amber-100 text-amber-800' :
+                                      urgency.level === 'soon' ? 'bg-[#EBE1CF] gold' : ''
+                                    }`}
+                                    title={t.deadline ? new Date(t.deadline).toLocaleDateString('sk-SK') : ''}
+                                  >
+                                    {urgency.level === 'overdue' ? (lang === 'en' ? `Overdue -${urgency.days}d` : `Po termíne -${urgency.days}d`) :
+                                     urgency.level === 'today' ? (lang === 'en' ? 'Today!' : 'Dnes!') :
+                                     urgency.level === 'soon' ? `${urgency.days}d` : `${urgency.days}d`}
+                                  </span>
+                                )}
+
+                                {/* Deadline picker */}
+                                <label className="opacity-0 group-hover:opacity-100 transition cursor-pointer" title={lang === 'en' ? 'Set deadline' : 'Nastaviť termín'}>
+                                  <input
+                                    type="date"
+                                    value={t.deadline || ''}
+                                    onChange={(e) => updateTaskDeadline(t.id, e.target.value)}
+                                    className="sr-only"
+                                    onClick={(e) => e.currentTarget.showPicker?.()}
+                                  />
+                                  <Calendar size={13} className={t.deadline ? 'gold' : 'text-gray-400 hover:text-gold'} />
+                                </label>
+
                                 <button onClick={() => removeTask(t.id)} className="opacity-0 group-hover:opacity-100 transition gold hover:text-red-600"><Trash2 size={13} /></button>
                               </li>
                               {isJanVeilTask && !t.done && phase !== '9-12 mesiacov pred' && phase !== '6-9 mesiacov pred' && (
@@ -1585,7 +2781,7 @@ export default function App() {
                                     <div className="flex items-center justify-between gap-4 flex-wrap">
                                       <div className="flex-1 min-w-[200px]">
                                         <p className="text-[10px] tracking-[0.2em] uppercase gold mb-1">Tip od JanVeil</p>
-                                        <p className="serif italic text-base" style={{ color: '#1E1910' }}>Pozrite si našu kolekciu svadobných šiat</p>
+                                        <p className="serif italic text-base" style={{ color: '#1E1910' }}>{lang === 'en' ? 'Browse our wedding dress collection' : 'Pozrite si našu kolekciu svadobných šiat'}</p>
                                       </div>
                                       <a
                                         href="https://www.janveil.sk/svadobne-saty/"
@@ -1593,7 +2789,7 @@ export default function App() {
                                         rel="noopener noreferrer"
                                         className="text-[10px] tracking-[0.2em] uppercase gold hover:opacity-70 border border-gold rounded-full px-4 py-2 flex items-center gap-2 whitespace-nowrap"
                                       >
-                                        <ImageIcon size={12} /> Naša kolekcia
+                                        <ImageIcon size={12} /> {lang === "en" ? "Our collection" : "Naša kolekcia"}
                                       </a>
                                     </div>
                                   </div>
@@ -1611,14 +2807,14 @@ export default function App() {
           </div>
 
           <div className="bg-white border hairline rounded-card p-6 mt-8">
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">Pridať vlastnú úlohu</p>
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">{lang === "en" ? "Add custom task" : "Pridať vlastnú úlohu"}</p>
             <div className="grid md:grid-cols-[1fr,220px,auto] gap-4 items-end">
               <input type="text" value={newTask.task} onChange={(e) => setNewTask({ ...newTask, task: e.target.value })}
-                placeholder="Napríklad: Rezervovať hotel pre rodičov" className="border-b hairline py-2 bg-transparent"
+                placeholder={lang === "en" ? "e.g.: Book hotel for parents" : "Napríklad: Rezervovať hotel pre rodičov"} className="border-b hairline py-2 bg-transparent"
                 onKeyPress={(e) => e.key === 'Enter' && addTask()} />
               <ElegantSelect value={newTask.phase} onChange={(v) => setNewTask({ ...newTask, phase: v })} options={phases.map(p => ({ value: p, label: p }))} />
               <button onClick={addTask} className="border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2">
-                <Plus size={14} /> Pridať
+                <Plus size={14} /> {t('actions.add')}
               </button>
             </div>
           </div>
@@ -1626,16 +2822,16 @@ export default function App() {
       )}
 
       {activeModule === 'budget' && (
-        <ModuleShell title="Rozpočet" subtitle="Prehľad vašich investícií do toho najkrajšieho dňa" onBack={() => setActiveModule('home')}>
-          <div className="grid md:grid-cols-3 gap-5 mb-10 stagger">
-            <StatCard label="Celkový rozpočet" value={`${budgetTotal.toLocaleString('sk-SK')} €`} editable onChange={setBudgetTotal} />
-            <StatCard label="Naplánované" value={`${totalPlanned.toLocaleString('sk-SK')} €`} />
-            <StatCard label="Minuté" value={`${totalSpent.toLocaleString('sk-SK')} €`} accent={totalSpent > budgetTotal} />
+        <ModuleShell title={lang === 'en' ? 'Budget' : 'Rozpočet'} subtitle={lang === 'en' ? 'Overview of your investments in the most beautiful day' : 'Prehľad vašich investícií do toho najkrajšieho dňa'} lang={lang} onBack={() => setActiveModule('home')}>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6 stagger">
+            <StatCard label={lang === 'en' ? 'Total budget' : 'Celkový rozpočet'} value={`${budgetTotal.toLocaleString(lang === 'en' ? 'en-US' : 'sk-SK')} €`} editable onChange={setBudgetTotal} />
+            <StatCard label={lang === 'en' ? 'Planned' : 'Naplánované'} value={`${totalPlanned.toLocaleString(lang === 'en' ? 'en-US' : 'sk-SK')} €`} />
+            <StatCard label={lang === 'en' ? 'Spent' : 'Minuté'} value={`${totalSpent.toLocaleString(lang === 'en' ? 'en-US' : 'sk-SK')} €`} accent={totalSpent > budgetTotal} />
           </div>
 
-          <div className="bg-white border hairline rounded-card p-6 mb-6">
+          <div className="bg-white border hairline rounded-card p-5 mb-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs tracking-wider uppercase gold">Využitie rozpočtu</span>
+              <span className="text-xs tracking-wider uppercase gold">{lang === 'en' ? 'Budget usage' : 'Využitie rozpočtu'}</span>
               <span className="serif text-lg" style={{ color: '#1E1910' }}>{budgetTotal ? Math.round((totalSpent / budgetTotal) * 100) : 0}%</span>
             </div>
             <div className="h-1.5 bg-gray-100 relative overflow-hidden rounded-full">
@@ -1643,159 +2839,209 @@ export default function App() {
             </div>
           </div>
 
-          <div className="space-y-4 mb-8">
+          {/* === KOMPAKTNÁ MRIEŽKA KATEGÓRIÍ === */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
             {expenses.map(e => {
               const remaining = e.planned - e.spent;
               const pct = e.planned ? (e.spent / e.planned) * 100 : 0;
+              const isOver = e.spent > e.planned && e.planned > 0;
               return (
-                <div key={e.id} className="bg-white border hairline rounded-card p-6 group hover:border-gold transition-all duration-300">
-                  <div className="grid md:grid-cols-[1fr,180px,180px,40px] gap-5 items-end">
+                <div key={e.id} className={`bg-white border rounded-soft p-4 group transition-all duration-300 ${isOver ? 'border-red-300' : 'hairline hover:border-gold'}`}>
+                  {/* Header: kategória + delete */}
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <input
+                      type="text"
+                      value={e.category}
+                      onChange={(ev) => updateExpense(e.id, 'category', ev.target.value)}
+                      className="flex-1 bg-transparent border-0 serif text-base leading-tight p-0"
+                      style={{ color: '#1E1910', fontWeight: 500 }}
+                      placeholder={lang === 'en' ? 'Category' : 'Kategória'}
+                    />
+                    <button onClick={() => removeExpense(e.id)} className="opacity-0 group-hover:opacity-100 gold hover:text-red-600 transition flex-shrink-0">
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+
+                  {/* Dve kompaktné pole vedľa seba */}
+                  <div className="grid grid-cols-2 gap-2 mb-3">
                     <div>
-                      <label className="budget-label">Kategória</label>
-                      <input type="text" value={e.category} onChange={(ev) => updateExpense(e.id, 'category', ev.target.value)} className="w-full bg-transparent border-b hairline py-1.5 serif text-lg" style={{ color: '#1E1910' }} />
-                    </div>
-                    <div>
-                      <label className="budget-label">Naplánované</label>
-                      <div className="budget-input-wrapper">
-                        <input type="number" value={e.planned || ''} onChange={(ev) => updateExpense(e.id, 'planned', ev.target.value)} placeholder="0" />
-                        <span className="gold serif text-lg ml-1">€</span>
+                      <label className="text-[9px] tracking-[0.15em] uppercase gold block mb-1">{lang === 'en' ? 'Planned' : 'Plán'}</label>
+                      <div className="flex items-baseline gap-1 border-b hairline pb-1">
+                        <input
+                          type="number"
+                          value={e.planned || ''}
+                          onChange={(ev) => updateExpense(e.id, 'planned', ev.target.value)}
+                          placeholder="0"
+                          className="flex-1 bg-transparent border-0 p-0 text-sm min-w-0"
+                          style={{ color: '#1E1910' }}
+                        />
+                        <span className="gold text-xs">€</span>
                       </div>
                     </div>
                     <div>
-                      <label className="budget-label">Minuté</label>
-                      <div className="budget-input-wrapper" style={{ borderColor: e.spent > e.planned ? '#DC2626' : undefined }}>
-                        <input type="number" value={e.spent || ''} onChange={(ev) => updateExpense(e.id, 'spent', ev.target.value)} placeholder="0" style={{ color: e.spent > e.planned ? '#DC2626' : '#1E1910' }} />
-                        <span className={e.spent > e.planned ? 'text-red-600 serif text-lg ml-1' : 'gold serif text-lg ml-1'}>€</span>
+                      <label className="text-[9px] tracking-[0.15em] uppercase gold block mb-1">{lang === 'en' ? 'Spent' : 'Minuté'}</label>
+                      <div className="flex items-baseline gap-1 border-b pb-1" style={{ borderColor: isOver ? '#DC2626' : undefined }}>
+                        <input
+                          type="number"
+                          value={e.spent || ''}
+                          onChange={(ev) => updateExpense(e.id, 'spent', ev.target.value)}
+                          placeholder="0"
+                          className="flex-1 bg-transparent border-0 p-0 text-sm min-w-0"
+                          style={{ color: isOver ? '#DC2626' : '#1E1910' }}
+                        />
+                        <span className={`text-xs ${isOver ? 'text-red-600' : 'gold'}`}>€</span>
                       </div>
                     </div>
-                    <button onClick={() => removeExpense(e.id)} className="opacity-0 group-hover:opacity-100 gold hover:text-red-600 transition self-end mb-2"><Trash2 size={14} /></button>
                   </div>
-                  <div className="mt-4 flex items-center gap-3">
-                    <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="progress-bar h-full rounded-full" style={{ width: `${Math.min(100, pct)}%`, backgroundColor: e.spent > e.planned ? '#DC2626' : '#9B7A45' }} />
-                    </div>
-                    <span className="text-xs" style={{ color: '#6B5946' }}>{remaining >= 0 ? `Zostáva ${remaining.toLocaleString('sk-SK')} €` : `Prekročené o ${Math.abs(remaining).toLocaleString('sk-SK')} €`}</span>
+
+                  {/* Progress bar + stav */}
+                  <div className="h-1 bg-gray-100 rounded-full overflow-hidden mb-1.5">
+                    <div className="progress-bar h-full rounded-full" style={{ width: `${Math.min(100, pct)}%`, backgroundColor: isOver ? '#DC2626' : '#9B7A45' }} />
                   </div>
+                  <p className="text-[10px]" style={{ color: isOver ? '#DC2626' : '#6B5946' }}>
+                    {e.planned === 0 ? (lang === 'en' ? 'Not planned yet' : 'Nenaplánované') :
+                     remaining >= 0
+                      ? (lang === 'en' ? `${remaining.toLocaleString('en-US')} € left` : `Zostáva ${remaining.toLocaleString('sk-SK')} €`)
+                      : (lang === 'en' ? `Over by ${Math.abs(remaining).toLocaleString('en-US')} €` : `Prekročené o ${Math.abs(remaining).toLocaleString('sk-SK')} €`)
+                    }
+                  </p>
                 </div>
               );
             })}
           </div>
 
-          <div className="bg-white border hairline rounded-card p-6">
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">Pridať kategóriu</p>
-            <div className="grid md:grid-cols-[1fr,180px,180px,auto] gap-5 items-end">
+          {/* === Pridať kategóriu — kompaktný formulár === */}
+          <div className="bg-white border hairline rounded-card p-5">
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">{lang === 'en' ? 'Add category' : 'Pridať kategóriu'}</p>
+            <div className="grid sm:grid-cols-[1fr,120px,120px,auto] gap-3 items-end">
               <div>
-                <label className="budget-label">Kategória</label>
-                <input type="text" value={newExpense.category} onChange={(ev) => setNewExpense({ ...newExpense, category: ev.target.value })} placeholder="Napr. Fotokútik" className="w-full bg-transparent border-b hairline py-1.5" />
+                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-1 block">{lang === 'en' ? 'Category' : 'Kategória'}</label>
+                <input type="text" value={newExpense.category} onChange={(ev) => setNewExpense({ ...newExpense, category: ev.target.value })} placeholder={lang === 'en' ? 'e.g. Photobooth' : 'Napr. Fotokútik'} className="w-full bg-transparent border-b hairline py-1.5 text-sm" />
               </div>
               <div>
-                <label className="budget-label">Naplánované</label>
-                <div className="budget-input-wrapper">
-                  <input type="number" value={newExpense.planned} onChange={(ev) => setNewExpense({ ...newExpense, planned: ev.target.value })} placeholder="0" />
-                  <span className="gold serif text-lg ml-1">€</span>
+                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-1 block">{lang === 'en' ? 'Planned' : 'Plán'}</label>
+                <div className="flex items-baseline gap-1 border-b hairline pb-1">
+                  <input type="number" value={newExpense.planned} onChange={(ev) => setNewExpense({ ...newExpense, planned: ev.target.value })} placeholder="0" className="flex-1 bg-transparent border-0 text-sm min-w-0" />
+                  <span className="gold text-xs">€</span>
                 </div>
               </div>
               <div>
-                <label className="budget-label">Minuté</label>
-                <div className="budget-input-wrapper">
-                  <input type="number" value={newExpense.spent} onChange={(ev) => setNewExpense({ ...newExpense, spent: ev.target.value })} placeholder="0" />
-                  <span className="gold serif text-lg ml-1">€</span>
+                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-1 block">{lang === 'en' ? 'Spent' : 'Minuté'}</label>
+                <div className="flex items-baseline gap-1 border-b hairline pb-1">
+                  <input type="number" value={newExpense.spent} onChange={(ev) => setNewExpense({ ...newExpense, spent: ev.target.value })} placeholder="0" className="flex-1 bg-transparent border-0 text-sm min-w-0" />
+                  <span className="gold text-xs">€</span>
                 </div>
               </div>
-              <button onClick={addExpense} className="border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2"><Plus size={14} /> Pridať</button>
+              <button onClick={addExpense} className="border border-gold gold px-4 py-2 rounded-full text-[10px] tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-1.5 justify-center">
+                <Plus size={12} /> {lang === 'en' ? 'Add' : 'Pridať'}
+              </button>
             </div>
           </div>
         </ModuleShell>
       )}
 
       {activeModule === 'guests' && (
-        <ModuleShell title="Hostia" subtitle="Tí, s ktorými chcete zdieľať svoj veľký deň" onBack={() => setActiveModule('home')}>
+        <ModuleShell title={t('nav.guests')} subtitle={t('guests.subtitle')} lang={lang} onBack={() => setActiveModule('home')}>
           <div className="grid md:grid-cols-4 gap-4 mb-8 stagger">
-            <StatCard label="Celkom" value={guests.length} />
-            <StatCard label="Dospelí" value={guests.filter(g => g.type === 'Dospelý').length} />
-            <StatCard label="Deti" value={guests.filter(g => g.type === 'Dieťa').length} />
-            <StatCard label="Potvrdení" value={confirmedGuests} />
+            <StatCard label={t('guests.total')} value={guests.length} />
+            <StatCard label={t('guests.adults')} value={guests.filter(g => (g.type === 'Dospelý' || g.type === 'Adult')).length} />
+            <StatCard label={t('guests.children')} value={guests.filter(g => (g.type === 'Dieťa' || g.type === 'Child')).length} />
+            <StatCard label={t('guests.confirmed')} value={confirmedGuests} />
           </div>
 
-          {guests.some(g => g.rsvp === 'Potvrdená') && (
+          {guests.some(g => (g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed')) && (
             <div className="bg-white border hairline rounded-card p-6 mb-6">
-              <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4 flex items-center gap-2"><UtensilsCrossed size={12} /> Pre catering — potvrdení hostia</p>
+              <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4 flex items-center gap-2"><UtensilsCrossed size={12} /> {t("guests.forCatering")}</p>
               <div className="grid grid-cols-3 gap-4">
-                <div><div className="serif text-3xl font-normal" style={{ color: '#1E1910' }}>{mealCounts['Celá porcia'] || 0}</div><div className="text-xs mt-1" style={{ color: '#4A3F2E' }}>Celá porcia</div></div>
-                <div><div className="serif text-3xl font-normal" style={{ color: '#1E1910' }}>{mealCounts['Polovičná porcia'] || 0}</div><div className="text-xs mt-1" style={{ color: '#4A3F2E' }}>Polovičná porcia</div></div>
-                <div><div className="serif text-3xl font-normal" style={{ color: '#1E1910' }}>{mealCounts['Bez jedla'] || 0}</div><div className="text-xs mt-1" style={{ color: '#4A3F2E' }}>Bez jedla</div></div>
+                <div><div className="serif text-3xl font-normal" style={{ color: '#1E1910' }}>{(mealCounts['Celá porcia'] || mealCounts['Full portion'] || 0)}</div><div className="text-xs mt-1" style={{ color: '#4A3F2E' }}>{t("guests.fullPortion")}</div></div>
+                <div><div className="serif text-3xl font-normal" style={{ color: '#1E1910' }}>{(mealCounts['Polovičná porcia'] || mealCounts['Half portion'] || 0)}</div><div className="text-xs mt-1" style={{ color: '#4A3F2E' }}>{t("guests.halfPortion")}</div></div>
+                <div><div className="serif text-3xl font-normal" style={{ color: '#1E1910' }}>{(mealCounts['Bez jedla'] || mealCounts['No meal'] || 0)}</div><div className="text-xs mt-1" style={{ color: '#4A3F2E' }}>{t("guests.noMeal")}</div></div>
               </div>
             </div>
           )}
 
           <div className="bg-white border hairline rounded-card p-6 mb-6">
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-5">Pridať hosťa</p>
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-5">{t("guests.addGuest")}</p>
             <div className="grid md:grid-cols-2 gap-5 mb-5">
               <div>
-                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Meno</label>
-                <input type="text" value={newGuest.name} onChange={e => setNewGuest({ ...newGuest, name: e.target.value })} placeholder="Napr. Anna Nováková" className="w-full border-b hairline py-2 bg-transparent" onKeyPress={e => e.key === 'Enter' && addGuest()} />
+                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Name" : "Meno"}</label>
+                <input type="text" value={newGuest.name} onChange={e => setNewGuest({ ...newGuest, name: e.target.value })} placeholder={lang === "en" ? "e.g. Anna Smith" : "Napr. Anna Nováková"} className="w-full border-b hairline py-2 bg-transparent" onKeyPress={e => e.key === 'Enter' && addGuest()} />
               </div>
               <div>
-                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Strana</label>
-                <ElegantSelect value={newGuest.side} onChange={v => setNewGuest({ ...newGuest, side: v })} options={[{ value: 'Nevesta', label: 'Nevesta' }, { value: 'Ženích', label: 'Ženích' }, { value: 'Spoloční', label: 'Spoloční' }]} />
+                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{t("guests.side")}</label>
+                <ElegantSelect value={newGuest.side} onChange={v => setNewGuest({ ...newGuest, side: v })} options={[{ value: lang === 'en' ? 'Bride' : 'Nevesta', label: lang === 'en' ? 'Bride' : 'Nevesta' }, { value: lang === 'en' ? 'Groom' : 'Ženích', label: lang === 'en' ? 'Groom' : 'Ženích' }, { value: lang === 'en' ? 'Joint' : 'Spoloční', label: lang === 'en' ? 'Joint' : 'Spoloční' }]} />
               </div>
             </div>
             <div className="mb-5">
-              <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Typ</label>
+              <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Type" : "Typ"}</label>
               <div className="pill-group">
-                <button className={`pill-btn ${newGuest.type === 'Dospelý' ? 'active' : ''}`} onClick={() => setNewGuest({ ...newGuest, type: 'Dospelý' })}><User size={12} style={{ marginRight: 6 }} />Dospelý</button>
-                <button className={`pill-btn ${newGuest.type === 'Dieťa' ? 'active' : ''}`} onClick={() => setNewGuest({ ...newGuest, type: 'Dieťa' })}><Baby size={12} style={{ marginRight: 6 }} />Dieťa</button>
+                <button className={`pill-btn ${(newGuest.type === 'Dospelý' || newGuest.type === 'Adult') ? 'active' : ''}`} onClick={() => setNewGuest({ ...newGuest, type: lang === 'en' ? 'Adult' : 'Dospelý' })}><User size={12} style={{ marginRight: 6 }} />{t("guests.adult")}</button>
+                <button className={`pill-btn ${(newGuest.type === 'Dieťa' || newGuest.type === 'Child') ? 'active' : ''}`} onClick={() => setNewGuest({ ...newGuest, type: lang === 'en' ? 'Child' : 'Dieťa' })}><Baby size={12} style={{ marginRight: 6 }} />{t("guests.child")}</button>
               </div>
             </div>
             <div className="mb-5">
-              <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Porcia jedla</label>
+              <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Meal portion" : "Porcia jedla"}</label>
               <div className="pill-group">
-                {['Celá porcia', 'Polovičná porcia', 'Bez jedla'].map(opt => (<button key={opt} className={`pill-btn ${newGuest.meal === opt ? 'active' : ''}`} onClick={() => setNewGuest({ ...newGuest, meal: opt })}>{opt}</button>))}
+                {[
+                  { sk: 'Celá porcia', en: 'Full portion' },
+                  { sk: 'Polovičná porcia', en: 'Half portion' },
+                  { sk: 'Bez jedla', en: 'No meal' },
+                ].map(({ sk, en }) => {
+                  const val = lang === 'en' ? en : sk;
+                  return (<button key={val} className={`pill-btn ${newGuest.meal === val || newGuest.meal === sk || newGuest.meal === en ? 'active' : ''}`} onClick={() => setNewGuest({ ...newGuest, meal: val })}>{val}</button>);
+                })}
               </div>
             </div>
-            {newGuest.type === 'Dieťa' && (
+            {(newGuest.type === 'Dieťa' || newGuest.type === 'Child') && (
               <div className="mb-5 fade-in">
                 <label className="flex items-center gap-3 cursor-pointer select-none">
                   <div onClick={() => setNewGuest({ ...newGuest, highChair: !newGuest.highChair })} className={`w-5 h-5 border rounded flex items-center justify-center transition ${newGuest.highChair ? 'bg-gold border-gold' : 'hairline'}`}>
                     {newGuest.highChair && <Check size={12} className="text-white" strokeWidth={2.5} />}
                   </div>
-                  <span className="text-sm" style={{ color: '#1E1910' }}>Potrebuje detskú stoličku (high chair)</span>
+                  <span className="text-sm" style={{ color: '#1E1910' }}>{lang === "en" ? "Needs a high chair" : "Potrebuje detskú stoličku (high chair)"}</span>
                 </label>
               </div>
             )}
             <div className="mb-5">
-              <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Účasť</label>
+              <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Attendance" : "Účasť"}</label>
               <div className="pill-group">
-                {['Čaká sa', 'Potvrdená', 'Odmietol'].map(opt => (<button key={opt} className={`pill-btn ${newGuest.rsvp === opt ? 'active' : ''}`} onClick={() => setNewGuest({ ...newGuest, rsvp: opt })}>{opt}</button>))}
+                {[
+                  { sk: 'Čaká sa', en: 'Pending' },
+                  { sk: 'Potvrdená', en: 'Confirmed' },
+                  { sk: 'Odmietol', en: 'Declined' },
+                ].map(({ sk, en }) => {
+                  const val = lang === 'en' ? en : sk;
+                  return (<button key={val} className={`pill-btn ${newGuest.rsvp === val || newGuest.rsvp === sk || newGuest.rsvp === en ? 'active' : ''}`} onClick={() => setNewGuest({ ...newGuest, rsvp: val })}>{val}</button>);
+                })}
               </div>
             </div>
             <div className="mb-5">
-              <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block flex items-center gap-1.5"><AlertCircle size={12} />Alergény a intolerancie</label>
-              <input type="text" value={newGuest.allergies} onChange={e => setNewGuest({ ...newGuest, allergies: e.target.value })} placeholder="Napr. lepok, laktóza, orechy..." className="w-full border-b hairline py-2 bg-transparent" />
+              <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block flex items-center gap-1.5"><AlertCircle size={12} />{lang === "en" ? "Allergens and intolerances" : "Alergény a intolerancie"}</label>
+              <input type="text" value={newGuest.allergies} onChange={e => setNewGuest({ ...newGuest, allergies: e.target.value })} placeholder={lang === "en" ? "e.g. gluten, lactose, nuts..." : "Napr. lepok, laktóza, orechy..."} className="w-full border-b hairline py-2 bg-transparent" />
             </div>
-            <button onClick={addGuest} className="border border-gold gold px-6 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition flex items-center gap-2"><Plus size={14} /> Pridať hosťa</button>
+            <button onClick={addGuest} className="border border-gold gold px-6 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition flex items-center gap-2"><Plus size={14} /> {t('guests.addGuest')}</button>
           </div>
 
           {/* BULK ADD — celá rodina naraz */}
           <details className="bg-white border hairline rounded-card p-6 mb-6">
             <summary className="text-[10px] tracking-[0.3em] uppercase gold cursor-pointer hover:opacity-70 select-none">
-              Pridať celú rodinu naraz
+              {t("guests.addFamily")}
             </summary>
             <div className="mt-5 grid md:grid-cols-[1fr,120px,auto] gap-4 items-end">
               <div>
-                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Priezvisko rodiny</label>
-                <input type="text" value={bulkFamilyName} onChange={e => setBulkFamilyName(e.target.value)} placeholder="napr. Novákovci" className="w-full border-b hairline py-2 bg-transparent" />
+                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{t("guests.familyName")}</label>
+                <input type="text" value={bulkFamilyName} onChange={e => setBulkFamilyName(e.target.value)} placeholder={lang === "en" ? "e.g. The Smiths" : "napr. Novákovci"} className="w-full border-b hairline py-2 bg-transparent" />
               </div>
               <div>
-                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Počet členov</label>
+                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{t("guests.familyCount")}</label>
                 <input type="number" min="2" max="12" value={bulkFamilyCount} onChange={e => setBulkFamilyCount(Number(e.target.value))} className="w-full border-b hairline py-2 bg-transparent" />
               </div>
               <button onClick={addFamilyGuests} className="border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2">
-                <Plus size={14} /> Pridať rodinu
+                <Plus size={14} /> {t("guests.addFamilyBtn")}
               </button>
             </div>
             <p className="text-xs italic mt-3" style={{ color: '#6B5946' }}>
-              Vytvorí sa {bulkFamilyCount} prázdnych záznamov s predvyplneným priezviskom. Doplňte si krstné mená a detaily.
+              {lang === 'en' ? `${bulkFamilyCount} empty records will be created with the pre-filled surname. Add first names and details.` : `Vytvorí sa ${bulkFamilyCount} prázdnych záznamov s predvyplneným priezviskom. Doplňte si krstné mená a detaily.`}
             </p>
           </details>
 
@@ -1809,7 +3055,7 @@ export default function App() {
                     type="text"
                     value={guestSearch}
                     onChange={e => setGuestSearch(e.target.value)}
-                    placeholder="Hľadať hosťa podľa mena alebo alergie..."
+                    placeholder={t("guests.searchPlaceholder")}
                     className="flex-1 bg-transparent border-0 py-1 text-sm"
                     style={{ color: '#1E1910' }}
                   />
@@ -1821,12 +3067,12 @@ export default function App() {
                 </div>
                 <div className="pill-group">
                   {[
-                    { val: 'all', label: `Všetci (${guests.length})` },
-                    { val: 'confirmed', label: `Potvrdení (${guests.filter(g => g.rsvp === 'Potvrdená').length})` },
-                    { val: 'pending', label: `Čakajúci (${guests.filter(g => g.rsvp === 'Čaká sa').length})` },
-                    { val: 'rejected', label: `Odmietli (${guests.filter(g => g.rsvp === 'Odmietol').length})` },
-                    { val: 'children', label: `Deti (${guests.filter(g => g.type === 'Dieťa').length})` },
-                    { val: 'allergies', label: `Alergiky (${guests.filter(g => g.allergies).length})` },
+                    { val: 'all', label: `${lang === 'en' ? 'All' : 'Všetci'} (${guests.length})` },
+                    { val: 'confirmed', label: `${lang === 'en' ? 'Confirmed' : 'Potvrdení'} (${guests.filter(g => (g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed')).length})` },
+                    { val: 'pending', label: `${lang === 'en' ? 'Pending' : 'Čakajúci'} (${guests.filter(g => (g.rsvp === 'Čaká sa' || g.rsvp === 'Pending')).length})` },
+                    { val: 'rejected', label: `${lang === 'en' ? 'Declined' : 'Odmietli'} (${guests.filter(g => (g.rsvp === 'Odmietol' || g.rsvp === 'Declined')).length})` },
+                    { val: 'children', label: `${lang === 'en' ? 'Children' : 'Deti'} (${guests.filter(g => (g.type === 'Dieťa' || g.type === 'Child')).length})` },
+                    { val: 'allergies', label: `${lang === 'en' ? 'Allergies' : 'Alergiky'} (${guests.filter(g => g.allergies).length})` },
                   ].map(opt => (
                     <button key={opt.val} className={`pill-btn ${guestFilter === opt.val ? 'active' : ''}`} onClick={() => setGuestFilter(opt.val)}>
                       {opt.label}
@@ -1841,24 +3087,24 @@ export default function App() {
                   <div className="flex items-center gap-3">
                     <span className="serif text-lg gold">{selectedGuests.length}</span>
                     <span className="text-xs" style={{ color: '#4A3F2E' }}>
-                      {selectedGuests.length === 1 ? 'vybraný' : 'vybraných'}
+                      {lang === 'en' ? 'selected' : selectedGuests.length === 1 ? 'vybraný' : 'vybraných'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <button onClick={() => bulkUpdateRsvp('Potvrdená')} className="text-[10px] tracking-[0.15em] uppercase gold hover:bg-[#EBE1CF] px-3 py-1.5 rounded-full border hairline">
-                      ✓ Potvrdiť
+                    <button onClick={() => bulkUpdateRsvp(lang === 'en' ? 'Confirmed' : 'Potvrdená')} className="text-[10px] tracking-[0.15em] uppercase gold hover:bg-[#EBE1CF] px-3 py-1.5 rounded-full border hairline">
+                      ✓ {lang === 'en' ? 'Confirm' : 'Potvrdiť'}
                     </button>
-                    <button onClick={() => bulkUpdateRsvp('Odmietol')} className="text-[10px] tracking-[0.15em] uppercase text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-full border hairline">
-                      ✕ Odmietol
+                    <button onClick={() => bulkUpdateRsvp(lang === 'en' ? 'Declined' : 'Odmietol')} className="text-[10px] tracking-[0.15em] uppercase text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-full border hairline">
+                      ✕ {lang === 'en' ? 'Declined' : 'Odmietol'}
                     </button>
                     {tables.length > 0 && (
-                      <BulkAssignSelect tables={tables} onAssign={bulkAssignToTable} />
+                      <BulkAssignSelect tables={tables} onAssign={bulkAssignToTable} lang={lang} />
                     )}
                     <button onClick={bulkRemoveGuests} className="text-[10px] tracking-[0.15em] uppercase text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-full border hairline flex items-center gap-1.5">
-                      <Trash2 size={10} /> Zmazať
+                      <Trash2 size={10} /> {t("actions.delete")}
                     </button>
                     <button onClick={() => setSelectedGuests([])} className="text-[10px] tracking-[0.15em] uppercase gold hover:opacity-60 px-3 py-1.5">
-                      Zrušiť výber
+                      {t("guests.clearSelection")}
                     </button>
                   </div>
                 </div>
@@ -1874,14 +3120,14 @@ export default function App() {
                       onChange={() => selectAllGuests(filteredGuests)}
                       className="accent-[#9B7A45]"
                     />
-                    <span>Vybrať všetkých ({filteredGuests.length})</span>
+                    <span>{t("guests.selectAll")} ({filteredGuests.length})</span>
                   </label>
                 </div>
               )}
 
               {filteredGuests.length === 0 ? (
                 <div className="text-center py-12 serif italic text-base" style={{ color: '#6B5946' }}>
-                  Žiadni hostia nezodpovedajú filtrom
+                  {t("guests.noMatch")}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -1900,14 +3146,14 @@ export default function App() {
                             <div className="initial-chip" style={{ position: 'static' }}>{getInitials(g.name)}</div>
                             <div>
                               <div className="flex items-center gap-2 mb-1">
-                                {g.type === 'Dieťa' ? <Baby size={14} className="gold" /> : <User size={14} className="gold" />}
+                                {(g.type === 'Dieťa' || g.type === 'Child') ? <Baby size={14} className="gold" /> : <User size={14} className="gold" />}
                                 <span className="serif text-lg" style={{ color: '#1E1910' }}>{g.name}</span>
-                                <span className="text-xs" style={{ color: '#6B5946' }}>· {g.side}</span>
+                                <span className="text-xs" style={{ color: '#6B5946' }}>· {tr(g.side)}</span>
                               </div>
                               <div className="flex items-center gap-3 flex-wrap text-xs" style={{ color: '#4A3F2E' }}>
-                                <span className={`px-2 py-0.5 rounded-full ${g.rsvp === 'Potvrdená' ? 'bg-[#EBE1CF] gold' : g.rsvp === 'Odmietol' ? 'bg-red-50 text-red-600' : 'bg-gray-50'}`}>{g.rsvp}</span>
-                                <span>· {g.meal}</span>
-                                {g.highChair && <span className="gold">· Detská stolička</span>}
+                                <span className={`px-2 py-0.5 rounded-full ${(g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed') ? 'bg-[#EBE1CF] gold' : (g.rsvp === 'Odmietol' || g.rsvp === 'Declined') ? 'bg-red-50 text-red-600' : 'bg-gray-50'}`}>{tr(g.rsvp)}</span>
+                                <span>· {tr(g.meal)}</span>
+                                {g.highChair && <span className="gold">· {lang === "en" ? "High chair" : "Detská stolička"}</span>}
                                 {g.allergies && <span className="text-amber-700">· ⚠ {g.allergies}</span>}
                               </div>
                             </div>
@@ -1924,46 +3170,60 @@ export default function App() {
               )}
             </>
           ) : (
-            <div className="text-center py-16 serif italic text-lg" style={{ color: '#6B5946' }}>Zatiaľ nie sú pridaní žiadni hostia</div>
+            <div className="text-center py-16 serif italic text-lg" style={{ color: '#6B5946' }}>{t("guests.noGuests")}</div>
           )}
 
           {editingGuest && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" style={{ backgroundColor: 'rgba(44, 36, 22, 0.4)', backdropFilter: 'blur(4px)' }} onClick={() => setEditingGuest(null)}>
               <div className="bg-white rounded-card max-w-lg w-full p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="serif text-2xl font-normal" style={{ color: '#1E1910' }}>Upraviť hosťa</h3>
+                  <h3 className="serif text-2xl font-normal" style={{ color: '#1E1910' }}>{lang === "en" ? "Edit guest" : "Upraviť hosťa"}</h3>
                   <button onClick={() => setEditingGuest(null)} className="gold hover:opacity-60"><X size={20} /></button>
                 </div>
                 <div className="space-y-5">
-                  <div><label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Meno</label><input type="text" value={editingGuest.name} onChange={e => setEditingGuest({ ...editingGuest, name: e.target.value })} className="w-full border-b hairline py-2 bg-transparent" /></div>
-                  <div><label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Strana</label><ElegantSelect value={editingGuest.side} onChange={v => setEditingGuest({ ...editingGuest, side: v })} options={[{ value: 'Nevesta', label: 'Nevesta' }, { value: 'Ženích', label: 'Ženích' }, { value: 'Spoloční', label: 'Spoloční' }]} /></div>
+                  <div><label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Name" : "Meno"}</label><input type="text" value={editingGuest.name} onChange={e => setEditingGuest({ ...editingGuest, name: e.target.value })} className="w-full border-b hairline py-2 bg-transparent" /></div>
+                  <div><label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{t("guests.side")}</label><ElegantSelect value={editingGuest.side} onChange={v => setEditingGuest({ ...editingGuest, side: v })} options={[{ value: lang === 'en' ? 'Bride' : 'Nevesta', label: lang === 'en' ? 'Bride' : 'Nevesta' }, { value: lang === 'en' ? 'Groom' : 'Ženích', label: lang === 'en' ? 'Groom' : 'Ženích' }, { value: lang === 'en' ? 'Joint' : 'Spoloční', label: lang === 'en' ? 'Joint' : 'Spoloční' }]} /></div>
                   <div>
-                    <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Typ</label>
+                    <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Type" : "Typ"}</label>
                     <div className="pill-group">
-                      <button className={`pill-btn ${editingGuest.type === 'Dospelý' ? 'active' : ''}`} onClick={() => setEditingGuest({ ...editingGuest, type: 'Dospelý' })}>Dospelý</button>
-                      <button className={`pill-btn ${editingGuest.type === 'Dieťa' ? 'active' : ''}`} onClick={() => setEditingGuest({ ...editingGuest, type: 'Dieťa' })}>Dieťa</button>
+                      <button className={`pill-btn ${(editingGuest.type === 'Dospelý' || editingGuest.type === 'Adult') ? 'active' : ''}`} onClick={() => setEditingGuest({ ...editingGuest, type: lang === 'en' ? 'Adult' : 'Dospelý' })}>{t("guests.adult")}</button>
+                      <button className={`pill-btn ${(editingGuest.type === 'Dieťa' || editingGuest.type === 'Child') ? 'active' : ''}`} onClick={() => setEditingGuest({ ...editingGuest, type: lang === 'en' ? 'Child' : 'Dieťa' })}>{t("guests.child")}</button>
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Porcia jedla</label>
-                    <div className="pill-group">{['Celá porcia', 'Polovičná porcia', 'Bez jedla'].map(opt => (<button key={opt} className={`pill-btn ${editingGuest.meal === opt ? 'active' : ''}`} onClick={() => setEditingGuest({ ...editingGuest, meal: opt })}>{opt}</button>))}</div>
+                    <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Meal portion" : "Porcia jedla"}</label>
+                    <div className="pill-group">{[
+                  { sk: 'Celá porcia', en: 'Full portion' },
+                  { sk: 'Polovičná porcia', en: 'Half portion' },
+                  { sk: 'Bez jedla', en: 'No meal' },
+                ].map(({ sk, en }) => {
+                  const val = lang === 'en' ? en : sk;
+                  return (<button key={val} className={`pill-btn ${editingGuest.meal === val || editingGuest.meal === sk || editingGuest.meal === en ? 'active' : ''}`} onClick={() => setEditingGuest({ ...editingGuest, meal: val })}>{val}</button>);
+                })}</div>
                   </div>
-                  {editingGuest.type === 'Dieťa' && (
+                  {(editingGuest.type === 'Dieťa' || editingGuest.type === 'Child') && (
                     <label className="flex items-center gap-3 cursor-pointer">
                       <div onClick={() => setEditingGuest({ ...editingGuest, highChair: !editingGuest.highChair })} className={`w-5 h-5 border rounded flex items-center justify-center transition ${editingGuest.highChair ? 'bg-gold border-gold' : 'hairline'}`}>
                         {editingGuest.highChair && <Check size={12} className="text-white" strokeWidth={2.5} />}
                       </div>
-                      <span className="text-sm" style={{ color: '#1E1910' }}>Potrebuje detskú stoličku</span>
+                      <span className="text-sm" style={{ color: '#1E1910' }}>{lang === "en" ? "Needs high chair" : "Potrebuje detskú stoličku"}</span>
                     </label>
                   )}
                   <div>
-                    <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Účasť</label>
-                    <div className="pill-group">{['Čaká sa', 'Potvrdená', 'Odmietol'].map(opt => (<button key={opt} className={`pill-btn ${editingGuest.rsvp === opt ? 'active' : ''}`} onClick={() => setEditingGuest({ ...editingGuest, rsvp: opt })}>{opt}</button>))}</div>
+                    <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Attendance" : "Účasť"}</label>
+                    <div className="pill-group">{[
+                  { sk: 'Čaká sa', en: 'Pending' },
+                  { sk: 'Potvrdená', en: 'Confirmed' },
+                  { sk: 'Odmietol', en: 'Declined' },
+                ].map(({ sk, en }) => {
+                  const val = lang === 'en' ? en : sk;
+                  return (<button key={val} className={`pill-btn ${editingGuest.rsvp === val || editingGuest.rsvp === sk || editingGuest.rsvp === en ? 'active' : ''}`} onClick={() => setEditingGuest({ ...editingGuest, rsvp: val })}>{val}</button>);
+                })}</div>
                   </div>
-                  <div><label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Alergény</label><input type="text" value={editingGuest.allergies} onChange={e => setEditingGuest({ ...editingGuest, allergies: e.target.value })} className="w-full border-b hairline py-2 bg-transparent" /></div>
+                  <div><label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Allergies" : "Alergény"}</label><input type="text" value={editingGuest.allergies} onChange={e => setEditingGuest({ ...editingGuest, allergies: e.target.value })} className="w-full border-b hairline py-2 bg-transparent" /></div>
                   <div className="flex gap-3 pt-4">
-                    <button onClick={() => { setGuests(guests.map(x => x.id === editingGuest.id ? editingGuest : x)); setEditingGuest(null); }} className="flex-1 bg-gold text-white px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:opacity-90 transition">Uložiť</button>
-                    <button onClick={() => setEditingGuest(null)} className="border hairline gold px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-50 transition">Zrušiť</button>
+                    <button onClick={() => { setGuests(guests.map(x => x.id === editingGuest.id ? editingGuest : x)); setEditingGuest(null); }} className="flex-1 bg-gold text-white px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:opacity-90 transition">{t('actions.save')}</button>
+                    <button onClick={() => setEditingGuest(null)} className="border hairline gold px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-50 transition">{t('actions.cancel')}</button>
                   </div>
                 </div>
               </div>
@@ -1973,7 +3233,7 @@ export default function App() {
       )}
 
       {activeModule === 'seating' && (
-        <ModuleShell title="Plán sály" subtitle="Interaktívna mapa — rozmiestnite stoly a prvky sály" onBack={() => setActiveModule('home')}>
+        <ModuleShell title={t('nav.seating')} subtitle={t('seating.subtitle')} lang={lang} onBack={() => setActiveModule('home')}>
           <SeatingModule
             guests={guests}
             tables={tables}
@@ -1997,88 +3257,91 @@ export default function App() {
             seatingView={seatingView}
             setSeatingView={setSeatingView}
             setActiveModule={setActiveModule}
+            lang={lang}
+            t={t}
+            tr={tr}
           />
         </ModuleShell>
       )}
 
       {/* ============ TIMELINE — Harmonogram dňa D ============ */}
       {activeModule === 'timeline' && (
-        <ModuleShell title="Harmonogram dňa D" subtitle="Časový rozpis — hodinu po hodine, aby všetko kĺzalo ako hodinky" onBack={() => setActiveModule('home')}>
-          <div className="bg-white border hairline rounded-card p-6 mb-6">
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">Pridať udalosť</p>
-            <div className="grid md:grid-cols-[120px,1fr,auto] gap-4 items-end">
+        <ModuleShell title={t('nav.timeline')} subtitle={t('timeline.subtitle')} lang={lang} onBack={() => setActiveModule('home')}>
+          {/* Kompaktný formulár pre pridanie */}
+          <div className="bg-white border hairline rounded-card p-5 mb-6">
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">{t('timeline.addEvent')}</p>
+            <div className="grid sm:grid-cols-[100px,1fr,auto] gap-3 items-end">
               <div>
-                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Čas</label>
-                <input type="time" value={newTimelineEvent.time} onChange={e => setNewTimelineEvent({ ...newTimelineEvent, time: e.target.value })} className="w-full border-b hairline py-2 bg-transparent" />
+                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-1 block">{t('timeline.time')}</label>
+                <input type="time" value={newTimelineEvent.time} onChange={e => setNewTimelineEvent({ ...newTimelineEvent, time: e.target.value })} className="w-full border-b hairline py-1.5 bg-transparent text-sm" />
               </div>
               <div>
-                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Udalosť</label>
-                <input type="text" value={newTimelineEvent.event} onChange={e => setNewTimelineEvent({ ...newTimelineEvent, event: e.target.value })} placeholder="Napr. Skupinová fotka rodiny" className="w-full border-b hairline py-2 bg-transparent" onKeyPress={e => e.key === 'Enter' && addTimelineEvent()} />
+                <label className="text-[10px] tracking-[0.2em] uppercase gold mb-1 block">{t('timeline.event')}</label>
+                <input type="text" value={newTimelineEvent.event} onChange={e => setNewTimelineEvent({ ...newTimelineEvent, event: e.target.value })} placeholder={t('timeline.eventPlaceholder')} className="w-full border-b hairline py-1.5 bg-transparent text-sm" onKeyPress={e => e.key === 'Enter' && addTimelineEvent()} />
               </div>
-              <button onClick={addTimelineEvent} className="border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2">
-                <Plus size={14} /> Pridať
+              <button onClick={addTimelineEvent} className="border border-gold gold px-4 py-2 rounded-full text-[10px] tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-1.5 justify-center">
+                <Plus size={12} /> {t('actions.add')}
               </button>
             </div>
           </div>
 
+          {/* === KOMPAKTNÁ MRIEŽKA UDALOSTÍ === */}
           {timeline.length > 0 ? (
-            <div className="relative pl-10 md:pl-14">
-              {/* Vertical line */}
-              <div className="absolute left-3 md:left-5 top-3 bottom-3 w-px bg-gold opacity-30" />
-
-              <div className="space-y-4">
-                {timeline.map((ev) => (
-                  <div key={ev.id} className="relative group">
-                    {/* Dot */}
-                    <div className="absolute -left-[28px] md:-left-[42px] top-5 w-3 h-3 rounded-full bg-gold border-2 border-white shadow-md" style={{ boxShadow: '0 0 0 3px rgba(176, 141, 87, 0.15)' }} />
-
-                    <div className="bg-white border hairline rounded-card p-5 hover:border-gold transition-all duration-300 hover:shadow-md">
-                      <div className="grid md:grid-cols-[90px,1fr,auto] gap-4 items-start">
-                        <input
-                          type="time"
-                          value={ev.time}
-                          onChange={e => updateTimelineEvent(ev.id, 'time', e.target.value)}
-                          className="serif text-xl gold bg-transparent border-0 py-1 w-24"
-                          style={{ fontFamily: "'Cormorant Garamond', serif" }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <input
-                            type="text"
-                            value={ev.event}
-                            onChange={e => updateTimelineEvent(ev.id, 'event', e.target.value)}
-                            className="serif text-lg w-full bg-transparent border-0 py-1"
-                            style={{ color: '#1E1910' }}
-                          />
-                          <input
-                            type="text"
-                            value={ev.notes}
-                            onChange={e => updateTimelineEvent(ev.id, 'notes', e.target.value)}
-                            placeholder="Poznámka (voliteľná)..."
-                            className="w-full text-xs mt-1 bg-transparent border-0"
-                            style={{ color: '#6B5946' }}
-                          />
-                        </div>
-                        <button onClick={() => removeTimelineEvent(ev.id)} className="opacity-0 group-hover:opacity-100 gold hover:text-red-600 transition mt-2">
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+              {timeline.map((ev) => (
+                <div key={ev.id} className="bg-white border hairline rounded-soft p-4 group hover:border-gold transition-all duration-300 relative">
+                  {/* Čas ako badge */}
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Clock size={12} className="gold flex-shrink-0" />
+                      <input
+                        type="time"
+                        value={ev.time}
+                        onChange={e => updateTimelineEvent(ev.id, 'time', e.target.value)}
+                        className="serif text-lg gold bg-transparent border-0 p-0 w-20"
+                        style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                      />
                     </div>
+                    <button onClick={() => removeTimelineEvent(ev.id)} className="opacity-0 group-hover:opacity-100 gold hover:text-red-600 transition flex-shrink-0">
+                      <Trash2 size={12} />
+                    </button>
                   </div>
-                ))}
-              </div>
+
+                  {/* Názov udalosti */}
+                  <input
+                    type="text"
+                    value={ev.event}
+                    onChange={e => updateTimelineEvent(ev.id, 'event', e.target.value)}
+                    className="serif text-base w-full bg-transparent border-0 p-0 leading-tight mb-1.5"
+                    style={{ color: '#1E1910', fontWeight: 500 }}
+                  />
+
+                  {/* Poznámka */}
+                  <input
+                    type="text"
+                    value={ev.notes}
+                    onChange={e => updateTimelineEvent(ev.id, 'notes', e.target.value)}
+                    placeholder={t('timeline.notePlaceholder')}
+                    className="w-full text-[11px] bg-transparent border-0 p-0 leading-snug"
+                    style={{ color: '#6B5946' }}
+                  />
+                </div>
+              ))}
             </div>
           ) : (
-            <div className="text-center py-16 serif italic text-lg" style={{ color: '#6B5946' }}>Zatiaľ žiadne udalosti</div>
+            <div className="text-center py-16 serif italic text-lg" style={{ color: '#6B5946' }}>{t('timeline.noEvents')}</div>
           )}
 
-          <div className="mt-10 bg-white border hairline rounded-card p-6 text-center">
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">Tip od JanVeil</p>
-            <p className="serif italic text-base mb-4" style={{ color: '#1E1910' }}>
-              "Harmonogram vytlačte a dajte ho družičkám, svedkom, DJ-ovi a fotografovi.<br />
-              Keď každý vie čo a kedy, svadba ide ako hodinky."
+          {/* Tip */}
+          <div className="bg-white border hairline rounded-card p-5 text-center">
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-2">{lang === 'en' ? 'Tip from JanVeil' : 'Tip od JanVeil'}</p>
+            <p className="serif italic text-sm mb-3" style={{ color: '#1E1910' }}>
+              {lang === 'en'
+                ? '"Print the schedule and give it to bridesmaids, witnesses, DJ, and photographer. When everyone knows what happens when, the wedding runs like clockwork."'
+                : '"Harmonogram vytlačte a dajte ho družičkám, svedkom, DJ-ovi a fotografovi. Keď každý vie čo a kedy, svadba ide ako hodinky."'}
             </p>
-            <button onClick={() => setShowExport(true)} className="text-xs tracking-wider uppercase gold border border-gold rounded-full px-5 py-2 hover:bg-gold hover:text-white transition inline-flex items-center gap-2">
-              <FileText size={12} /> Exportovať do PDF
+            <button onClick={() => setShowExport(true)} className="text-[10px] tracking-wider uppercase gold border border-gold rounded-full px-4 py-1.5 hover:bg-gold hover:text-white transition inline-flex items-center gap-1.5">
+              <FileText size={11} /> {lang === 'en' ? 'Export to PDF' : 'Exportovať do PDF'}
             </button>
           </div>
         </ModuleShell>
@@ -2086,10 +3349,10 @@ export default function App() {
 
       {/* ============ DOCUMENTS — Doklady a papierovanie ============ */}
       {activeModule === 'documents' && (
-        <ModuleShell title="Doklady a papierovanie" subtitle="Všetko okolo matriky, občianskych a zmeny priezviska" onBack={() => setActiveModule('home')}>
+        <ModuleShell title={t('nav.documents')} subtitle={t('documents.subtitle')} lang={lang} onBack={() => setActiveModule('home')}>
           <div className="mb-10 bg-white border hairline rounded-card p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs tracking-wider uppercase gold">Vybavené</span>
+              <span className="text-xs tracking-wider uppercase gold">{t('documents.handled')}</span>
               <div className="flex items-baseline gap-3">
                 <span className="serif text-4xl font-normal gold">{documents.length ? Math.round((documentsDone / documents.length) * 100) : 0}%</span>
                 <span className="text-sm" style={{ color: '#6B5946' }}>{documentsDone} / {documents.length}</span>
@@ -2116,36 +3379,149 @@ export default function App() {
           </div>
 
           <div className="bg-white border hairline rounded-card p-6">
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">Pridať vlastný doklad</p>
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">{t('documents.addCustom')}</p>
             <div className="grid grid-cols-[1fr,auto] gap-3 items-end">
-              <input type="text" value={newDocument} onChange={e => setNewDocument(e.target.value)} placeholder="Napr. Overený preklad rodného listu" className="border-b hairline py-2 bg-transparent" onKeyPress={e => e.key === 'Enter' && addDocument()} />
+              <input type="text" value={newDocument} onChange={e => setNewDocument(e.target.value)} placeholder={lang === "en" ? "e.g. Certified translation of birth certificate" : "Napr. Overený preklad rodného listu"} className="border-b hairline py-2 bg-transparent" onKeyPress={e => e.key === 'Enter' && addDocument()} />
               <button onClick={addDocument} className="border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2">
-                <Plus size={14} /> Pridať
+                <Plus size={14} /> {t('actions.add')}
               </button>
             </div>
           </div>
 
           <div className="mt-8 bg-gradient-to-br from-[#F5EFE3] to-[#EBE1CF] border hairline rounded-card p-6">
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">Kam ísť a kedy?</p>
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">
+              {lang === 'en' ? 'Where to go and when?' : 'Kam ísť a kedy?'}
+            </p>
             <ul className="text-sm space-y-2" style={{ color: '#1E1910' }}>
-              <li>• <strong>Matrika</strong> — minimálne 7 dní pred svadbou (ideálne 1-3 mesiace)</li>
-              <li>• <strong>Zmena priezviska</strong> — občiansky + pas do 30 dní po svadbe</li>
-              <li>• <strong>Banka / poisťovne</strong> — stačí v prvých týždňoch, všade len s kópiou sobášneho listu</li>
-              <li>• <strong>Cudzinec ako ženích/nevesta</strong> — vybaviť si potvrdenie o spôsobilosti aspoň 2 mesiace vopred</li>
+              {lang === 'en' ? (
+                <>
+                  <li>• <strong>Registry office</strong> — at least 7 days before the wedding (ideally 1-3 months)</li>
+                  <li>• <strong>Name change</strong> — ID card + passport within 30 days after the wedding</li>
+                  <li>• <strong>Bank / insurance</strong> — in the first weeks, everywhere with just a copy of the marriage certificate</li>
+                  <li>• <strong>Foreigner as groom/bride</strong> — arrange certificate of legal capacity at least 2 months in advance</li>
+                </>
+              ) : (
+                <>
+                  <li>• <strong>Matrika</strong> — minimálne 7 dní pred svadbou (ideálne 1-3 mesiace)</li>
+                  <li>• <strong>Zmena priezviska</strong> — občiansky + pas do 30 dní po svadbe</li>
+                  <li>• <strong>Banka / poisťovne</strong> — stačí v prvých týždňoch, všade len s kópiou sobášneho listu</li>
+                  <li>• <strong>Cudzinec ako ženích/nevesta</strong> — vybaviť si potvrdenie o spôsobilosti aspoň 2 mesiace vopred</li>
+                </>
+              )}
             </ul>
+          </div>
+        </ModuleShell>
+      )}
+
+      {/* ============ FAQ — Najčastejšie otázky ============ */}
+      {activeModule === 'faq' && (
+        <ModuleShell title={t('nav.faq')} subtitle={t('faq.subtitle')} lang={lang} onBack={() => setActiveModule('home')}>
+          {/* Intro */}
+          <div className="mb-10 bg-gradient-to-br from-[#F5EFE3] to-[#EBE1CF] border hairline rounded-card p-6 md:p-8">
+            <Heart size={20} strokeWidth={1.2} className="gold mb-3" />
+            <h3 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>
+              <em>{t("faq.haveQuestion")}</em>
+            </h3>
+            <p className="text-sm leading-relaxed" style={{ color: '#4A3F2E' }}>
+              {lang === 'en' ? 'If you do not find your question, call us at ' : 'Ak vašu otázku nenájdete, zavolajte nám na '}
+              <a href="tel:+421944943390" className="gold hover:opacity-70 underline">+421 944 943 390</a>
+              {lang === 'en' ? ' or email ' : ' alebo napíšte na '}
+              <a href="mailto:info@janveil.sk" className="gold hover:opacity-70 underline">info@janveil.sk</a>
+              {lang === 'en' ? '. We will gladly help.' : '. Radi vám poradíme.'}
+            </p>
+          </div>
+
+          {/* FAQ sekcie */}
+          <div className="space-y-8">
+            {faqCategories.map((category, catIdx) => (
+              <div key={catIdx}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-px w-8 bg-gold" />
+                  <h2 className="serif text-xl font-normal tracking-wide" style={{ color: '#1E1910' }}>
+                    {category.title}
+                  </h2>
+                </div>
+
+                <div className="space-y-2">
+                  {category.items.map((item, idx) => {
+                    const key = `${catIdx}-${idx}`;
+                    const isOpen = openFaq === key;
+                    return (
+                      <div key={key} className={`bg-white border rounded-soft overflow-hidden transition-all duration-300 ${isOpen ? 'border-gold shadow-md' : 'hairline'}`}>
+                        <button
+                          onClick={() => setOpenFaq(isOpen ? null : key)}
+                          className="w-full flex items-start justify-between gap-4 p-5 text-left hover:bg-[#F5EFE3] transition-colors"
+                        >
+                          <span className="serif text-lg font-normal flex-1" style={{ color: '#1E1910' }}>
+                            {item.q}
+                          </span>
+                          <ChevronDown
+                            size={18}
+                            className={`gold flex-shrink-0 mt-1 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                          />
+                        </button>
+                        {isOpen && (
+                          <div className="px-5 pb-5 pt-0 fade-in">
+                            <div className="border-t hairline pt-4">
+                              <p className="text-sm leading-relaxed" style={{ color: '#4A3F2E' }}>
+                                {item.a}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA karta dole */}
+          <div className="mt-12 bg-white border hairline rounded-card p-6 md:p-8 text-center">
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">{t('faq.noAnswer')}</p>
+            <h4 className="serif text-2xl font-normal mb-3" style={{ color: '#1E1910' }}>
+              {t('faq.callUs')}
+            </h4>
+            <p className="text-sm mb-5" style={{ color: '#4A3F2E' }}>
+              {t('faq.kvetka')}<br />
+              {t('faq.evenOutside')}
+            </p>
+            <div className="flex gap-3 justify-center flex-wrap">
+              <a
+                href="tel:+421944943390"
+                className="inline-flex items-center gap-2 bg-gold text-white px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:opacity-90 transition"
+              >
+                📞 +421 944 943 390
+              </a>
+              <a
+                href="mailto:info@janveil.sk"
+                className="inline-flex items-center gap-2 border border-gold gold px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition"
+              >
+                <Mail size={14} /> info@janveil.sk
+              </a>
+              <a
+                href="https://www.janveil.sk/skuska-svadobnych-siat/#termin"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 border hairline gold px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-[#F5EFE3] transition"
+              >
+                {t('hero.bookFitting')}
+              </a>
+            </div>
           </div>
         </ModuleShell>
       )}
 
       {/* ============ DIARY — Môj denník ============ */}
       {activeModule === 'diary' && (
-        <ModuleShell title="Môj denník" subtitle="Vaše myšlienky, inšpirácie, nápady" onBack={() => setActiveModule('home')}>
+        <ModuleShell title={t('nav.diary')} subtitle={t('diary.subtitle')} lang={lang} onBack={() => setActiveModule('home')}>
           <div className="bg-white border hairline rounded-card p-8">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-[10px] tracking-[0.3em] uppercase gold mb-2">Pre vaše oči</p>
+                <p className="text-[10px] tracking-[0.3em] uppercase gold mb-2">{t('diary.forYourEyes')}</p>
                 <p className="serif italic text-base" style={{ color: '#6B5946' }}>
-                  Napíšte si sem čokoľvek. Nápady, pocity, čo sa vám páči, čo si treba zapamätať.
+                  {t('diary.writeAnything')}
                 </p>
               </div>
               <MessageCircle size={24} strokeWidth={1.2} className="gold opacity-40" />
@@ -2153,13 +3529,13 @@ export default function App() {
             <textarea
               value={diary}
               onChange={(e) => setDiary(e.target.value)}
-              placeholder="Dnes som videla šaty ktoré sa mi páčia..."
+              placeholder={lang === "en" ? "Today I saw a dress I love..." : "Dnes som videla šaty ktoré sa mi páčia..."}
               className="w-full min-h-[500px] bg-transparent border-0 text-base leading-relaxed resize-y serif italic"
               style={{ color: '#1E1910', fontFamily: "'Cormorant Garamond', Georgia, serif" }}
             />
             <div className="pt-4 border-t hairline flex items-center justify-between text-xs" style={{ color: '#6B5946' }}>
-              <span>{diary.length} znakov</span>
-              <span>Automaticky uložené v tomto prehliadači</span>
+              <span>{diary.length} {t('diary.characters')}</span>
+              <span>{t('diary.autoSaved')}</span>
             </div>
           </div>
         </ModuleShell>
@@ -2171,8 +3547,8 @@ export default function App() {
           <div className="bg-white rounded-card max-w-2xl w-full p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="serif text-2xl font-normal mb-1" style={{ color: '#1E1910' }}>Exportovať plánovač</h3>
-                <p className="text-xs" style={{ color: '#6B5946' }}>Vytvorte si prehľadný dokument — ideálne na vytlačenie alebo zdieľanie.</p>
+                <h3 className="serif text-2xl font-normal mb-1" style={{ color: '#1E1910' }}>{lang === "en" ? "Export planner" : "Exportovať plánovač"}</h3>
+                <p className="text-xs" style={{ color: '#6B5946' }}>{lang === "en" ? "Create a clear document — ideal for printing or sharing." : "Vytvorte si prehľadný dokument — ideálne na vytlačenie alebo zdieľanie."}</p>
               </div>
               <button onClick={() => setShowExport(false)} className="gold hover:opacity-60"><X size={20} /></button>
             </div>
@@ -2186,12 +3562,12 @@ export default function App() {
                 <div className="w-12 h-12 rounded-full bg-gold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <FileText size={20} className="text-white" strokeWidth={1.5} />
                 </div>
-                <h4 className="serif text-xl font-normal mb-2" style={{ color: '#1E1910' }}>PDF dokument</h4>
+                <h4 className="serif text-xl font-normal mb-2" style={{ color: '#1E1910' }}>{lang === "en" ? "PDF document" : "PDF dokument"}</h4>
                 <p className="text-xs leading-relaxed mb-3" style={{ color: '#4A3F2E' }}>
-                  Krásne formátovaný dokument na vytlačenie. Stiahne sa HTML súbor — otvorte ho v prehliadači a kliknite "Tlačiť → Uložiť ako PDF".
+                  {lang === "en" ? "Beautifully formatted document for printing. An HTML file downloads — open it in a browser and click Print → Save as PDF." : "Krásne formátovaný dokument na vytlačenie. Stiahne sa HTML súbor — otvorte ho v prehliadači a kliknite \"Tlačiť → Uložiť ako PDF\"."}
                 </p>
                 <span className="text-[10px] tracking-[0.2em] uppercase gold flex items-center gap-1.5">
-                  Stiahnuť a vytlačiť <ChevronRight size={12} />
+                  {lang === "en" ? "Download and print" : "Stiahnuť a vytlačiť"} <ChevronRight size={12} />
                 </span>
               </button>
 
@@ -2202,12 +3578,12 @@ export default function App() {
                 <div className="w-12 h-12 rounded-full border border-gold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <FileSpreadsheet size={20} className="gold" strokeWidth={1.5} />
                 </div>
-                <h4 className="serif text-xl font-normal mb-2" style={{ color: '#1E1910' }}>Excel tabuľka</h4>
+                <h4 className="serif text-xl font-normal mb-2" style={{ color: '#1E1910' }}>{lang === "en" ? "Excel spreadsheet" : "Excel tabuľka"}</h4>
                 <p className="text-xs leading-relaxed mb-3" style={{ color: '#4A3F2E' }}>
-                  Kompletné dáta v 6 listoch: Prehľad, Úlohy, Rozpočet, Hostia, Catering, Zasadací poriadok.
+                  {lang === "en" ? "Complete data in 6 sheets: Overview, Tasks, Budget, Guests, Catering, Seating Plan." : "Kompletné dáta v 6 listoch: Prehľad, Úlohy, Rozpočet, Hostia, Catering, Zasadací poriadok."}
                 </p>
                 <span className="text-[10px] tracking-[0.2em] uppercase gold flex items-center gap-1.5">
-                  Stiahnuť Excel <ChevronRight size={12} />
+                  {lang === "en" ? "Download Excel" : "Stiahnuť Excel"} <ChevronRight size={12} />
                 </span>
               </button>
             </div>
@@ -2215,17 +3591,17 @@ export default function App() {
             {/* Advanced — backup JSON */}
             <details className="border-t hairline pt-5">
               <summary className="text-[10px] tracking-[0.3em] uppercase gold cursor-pointer hover:opacity-70 mb-3 select-none">
-                Zálohovať pre pokračovanie neskôr (JSON)
+                {lang === "en" ? "Backup for later (JSON)" : "Zálohovať pre pokračovanie neskôr (JSON)"}
               </summary>
               <p className="text-xs mb-3" style={{ color: '#6B5946' }}>
-                Tento formát slúži len na obnovenie vašich dát — nie je na tlač. Uložte si text, a neskôr ho vložte cez "Načítať".
+                {lang === "en" ? "This format is only for restoring your data — not for printing. Save the text and later paste it via Import." : "Tento formát slúži len na obnovenie vašich dát — nie je na tlač. Uložte si text, a neskôr ho vložte cez \"Načítať\"."}
               </p>
               <div className="flex gap-2 mb-3 flex-wrap">
                 <button onClick={copyToClipboard} className="border border-gold gold px-4 py-2 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2">
-                  {copyFeedback ? <><Check size={12} /> Skopírované</> : <><Layers size={12} /> Kopírovať</>}
+                  {copyFeedback ? <><Check size={12} /> {lang === "en" ? "Copied" : "Skopírované"}</> : <><Layers size={12} /> {lang === "en" ? "Copy" : "Kopírovať"}</>}
                 </button>
                 <button onClick={tryDownload} className="border hairline gold px-4 py-2 rounded-full text-xs tracking-wider uppercase hover:bg-gray-50 transition flex items-center gap-2">
-                  <Download size={12} /> Stiahnuť .json
+                  <Download size={12} /> {lang === "en" ? "Download .json" : "Stiahnuť .json"}
                 </button>
               </div>
               <textarea
@@ -2247,22 +3623,22 @@ export default function App() {
           <div className="bg-white rounded-card max-w-2xl w-full p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="serif text-2xl font-normal mb-1" style={{ color: '#1E1910' }}>Načítať dáta</h3>
-                <p className="text-xs" style={{ color: '#6B5946' }}>Obnovte uložený plánovač zo súboru alebo z textu.</p>
+                <h3 className="serif text-2xl font-normal mb-1" style={{ color: '#1E1910' }}>{lang === "en" ? "Import data" : "Načítať dáta"}</h3>
+                <p className="text-xs" style={{ color: '#6B5946' }}>{lang === "en" ? "Restore saved planner from file or text." : "Obnovte uložený plánovač zo súboru alebo z textu."}</p>
               </div>
               <button onClick={() => { setShowImport(false); setImportText(''); }} className="gold hover:opacity-60"><X size={20} /></button>
             </div>
 
             <label className="inline-flex items-center gap-2 border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition cursor-pointer mb-5">
-              <Upload size={14} /> Vybrať súbor
+              <Upload size={14} /> {lang === "en" ? "Choose file" : "Vybrať súbor"}
               <input type="file" accept=".json,application/json,text/plain" onChange={importFromFile} className="hidden" />
             </label>
 
-            <p className="text-[10px] tracking-[0.2em] uppercase gold mb-2">Alebo vložte text</p>
+            <p className="text-[10px] tracking-[0.2em] uppercase gold mb-2">{lang === "en" ? "Or paste text" : "Alebo vložte text"}</p>
             <textarea
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
-              placeholder='Vložte sem JSON dáta z exportu...'
+              placeholder={lang === "en" ? "Paste JSON data from export here..." : "Vložte sem JSON dáta z exportu..."}
               className="w-full h-48 border hairline rounded-soft p-4 text-xs font-mono bg-[#F5EFE3] resize-none"
               style={{ color: '#1E1910' }}
             />
@@ -2273,10 +3649,10 @@ export default function App() {
                 disabled={!importText.trim()}
                 className="flex-1 bg-gold text-white px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Načítať údaje
+                {lang === "en" ? "Import data" : "Načítať údaje"}
               </button>
               <button onClick={() => { setShowImport(false); setImportText(''); }} className="border hairline gold px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-50 transition">
-                Zrušiť
+                {t("actions.cancel")}
               </button>
             </div>
           </div>
@@ -2289,14 +3665,14 @@ export default function App() {
           <div className="bg-white rounded-card max-w-xl w-full p-8 modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="serif text-2xl font-normal mb-1" style={{ color: '#1E1910' }}>Zdieľať plánovač</h3>
-                <p className="text-xs" style={{ color: '#6B5946' }}>Pošlite odkaz partnerovi, rodičom alebo svedkom.</p>
+                <h3 className="serif text-2xl font-normal mb-1" style={{ color: '#1E1910' }}>{lang === "en" ? "Share planner" : "Zdieľať plánovač"}</h3>
+                <p className="text-xs" style={{ color: '#6B5946' }}>{lang === "en" ? "Send the link to your partner, parents or witnesses." : "Pošlite odkaz partnerovi, rodičom alebo svedkom."}</p>
               </div>
               <button onClick={() => setShowShareLink(false)} className="gold hover:opacity-60"><X size={20} /></button>
             </div>
 
             <div className="bg-[#F5EFE3] border hairline rounded-soft p-4 mb-4">
-              <p className="text-[10px] tracking-[0.2em] uppercase gold mb-2">Váš odkaz</p>
+              <p className="text-[10px] tracking-[0.2em] uppercase gold mb-2">{lang === "en" ? "Your link" : "Váš odkaz"}</p>
               <textarea
                 readOnly
                 value={shareLink}
@@ -2312,25 +3688,24 @@ export default function App() {
                 onClick={async () => {
                   try {
                     await navigator.clipboard.writeText(shareLink);
-                    alert('Odkaz skopírovaný do schránky!');
-                  } catch { alert('Skopírovanie zlyhalo. Označte text ručne a skopírujte.'); }
+                    alert(lang === 'en' ? 'Link copied to clipboard!' : 'Odkaz skopírovaný do schránky!');
+                  } catch { alert(lang === 'en' ? 'Copy failed. Select text manually and copy.' : 'Skopírovanie zlyhalo. Označte text ručne a skopírujte.'); }
                 }}
                 className="border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition flex items-center gap-2"
               >
-                <Copy size={14} /> Kopírovať odkaz
+                <Copy size={14} /> {lang === "en" ? "Copy link" : "Kopírovať odkaz"}
               </button>
               <a
-                href={`mailto:?subject=${encodeURIComponent('Náš svadobný plánovač')}&body=${encodeURIComponent(`Ahoj,\n\nposielam ti odkaz na náš svadobný plánovač — môžeš si tu pozrieť úlohy, rozpočet, hostí a všetko ostatné:\n\n${shareLink}\n\n— Pracovali sme na ňom cez salón JanVeil ♡`)}`}
+                href={`mailto:?subject=${encodeURIComponent(lang === 'en' ? 'Our wedding planner' : 'Náš svadobný plánovač')}&body=${encodeURIComponent(lang === 'en' ? `Hi,\n\nsending you a link to our wedding planner — you can see tasks, budget, guests and everything else here:\n\n${shareLink}\n\n— We worked on it via JanVeil salon ♡` : `Ahoj,\n\nposielam ti odkaz na náš svadobný plánovač — môžeš si tu pozrieť úlohy, rozpočet, hostí a všetko ostatné:\n\n${shareLink}\n\n— Pracovali sme na ňom cez salón JanVeil ♡`)}`}
                 className="border hairline gold px-5 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-50 transition flex items-center gap-2"
               >
-                <Mail size={14} /> Poslať emailom
+                <Mail size={14} /> {lang === "en" ? "Send via email" : "Poslať emailom"}
               </a>
             </div>
 
             <div className="mt-5 pt-5 border-t hairline">
               <p className="text-xs italic" style={{ color: '#6B5946' }}>
-                Pozor: Odkaz obsahuje všetky vaše dáta. Keď niekto otvorí odkaz, vidí presne to isté čo vy.
-                Na obnovenie dát stačí vložiť odkaz do prehliadača.
+                {lang === "en" ? "Warning: The link contains all your data. When someone opens it, they see exactly what you see. To restore data just paste the link into the browser." : "Pozor: Odkaz obsahuje všetky vaše dáta. Keď niekto otvorí odkaz, vidí presne to isté čo vy. Na obnovenie dát stačí vložiť odkaz do prehliadača."}
               </p>
             </div>
           </div>
@@ -2339,9 +3714,93 @@ export default function App() {
 
       {/* ============ STYLE QUIZ MODAL ============ */}
       {showStyleQuiz && (
-        <StyleQuizModal onClose={() => setShowStyleQuiz(false)} />
+        <StyleQuizModal onClose={() => setShowStyleQuiz(false)} lang={lang} />
       )}
 
+      {/* ============ TEMPLATES MODAL ============ */}
+      {showTemplates && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" style={{ backgroundColor: 'rgba(30, 25, 16, 0.5)', backdropFilter: 'blur(6px)' }} onClick={() => setShowTemplates(false)}>
+          <div className="bg-white rounded-card max-w-4xl w-full p-6 md:p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="text-[10px] tracking-[0.3em] uppercase gold mb-2">{t('templates.title')}</p>
+                <h3 className="serif text-3xl font-normal" style={{ color: '#1E1910' }}>
+                  <em>{t('templates.subtitle')}</em>
+                </h3>
+              </div>
+              <button onClick={() => setShowTemplates(false)} className="gold hover:opacity-60"><X size={22} /></button>
+            </div>
+
+            <p className="text-sm mb-6" style={{ color: '#4A3F2E' }}>
+              {lang === 'en'
+                ? 'Choose a template that matches your vision. It will set up budget categories and estimated costs. You can adjust everything later.'
+                : 'Vyberte si šablónu ktorá vám je blízka. Predvyplní rozpočet a odhadované sumy. Všetko môžete neskôr upraviť.'}
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              {weddingTemplates.map(tpl => (
+                <div key={tpl.id} className="border hairline rounded-card p-6 hover:border-gold hover:shadow-md transition-all duration-300 flex flex-col">
+                  <div className="text-4xl mb-3">{tpl.icon}</div>
+                  <h4 className="serif text-xl font-normal mb-2" style={{ color: '#1E1910' }}>{tpl.name}</h4>
+                  <p className="text-xs mb-4" style={{ color: '#6B5946' }}>{tpl.desc}</p>
+                  <div className="flex-1 space-y-1 mb-4">
+                    {tpl.expenses.map(e => (
+                      <div key={e.id} className="flex items-center justify-between text-xs" style={{ color: '#4A3F2E' }}>
+                        <span className="truncate pr-2">{e.category}</span>
+                        <span className="gold font-semibold whitespace-nowrap">{e.planned.toLocaleString(lang === 'en' ? 'en-US' : 'sk-SK')} €</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pt-3 border-t hairline flex items-center justify-between mb-4">
+                    <span className="text-[10px] tracking-[0.2em] uppercase gold">{lang === 'en' ? 'Total' : 'Spolu'}</span>
+                    <span className="serif text-xl font-normal gold">{tpl.budget.toLocaleString(lang === 'en' ? 'en-US' : 'sk-SK')} €</span>
+                  </div>
+                  <button
+                    onClick={() => applyTemplate(tpl)}
+                    className="w-full border border-gold gold px-4 py-2.5 rounded-full text-[10px] tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition"
+                  >
+                    {t('templates.apply')}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============ KONFETY ============ */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-[60] overflow-hidden">
+          {Array.from({ length: 180 }).map((_, i) => {
+            const left = Math.random() * 100;
+            const delay = Math.random() * 0.5;
+            const duration = 2 + Math.random() * 1.5;
+            const rotation = Math.random() * 360;
+            const colors = ['#9B7A45', '#D4B176', '#EBE1CF', '#F5EFE3', '#FFFFFF', '#E8C891'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const size = 6 + Math.random() * 8;
+            const shape = Math.random() > 0.5 ? '50%' : '2px';
+            return (
+              <div
+                key={i}
+                style={{
+                  position: 'absolute',
+                  left: `${left}%`,
+                  top: '-20px',
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  backgroundColor: color,
+                  borderRadius: shape,
+                  transform: `rotate(${rotation}deg)`,
+                  animation: `confetti-fall ${duration}s ease-out ${delay}s forwards`,
+                  opacity: 0.9,
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
 
       {/* ============ UNDO TOAST ============ */}
       {showUndoToast && (
@@ -2365,12 +3824,24 @@ export default function App() {
 }
 
 /* ============ SEATING MODULE ============ */
-function SeatingModule({ guests, tables, newTable, setNewTable, addTable, removeTable, updateTablePosition, assignGuestToTable, unassignGuest, unassignedGuests, getInitials, sceneElements, addSceneElement, removeSceneElement, updateScenePosition, updateSceneScale, updateSceneRotation, seatingView, setSeatingView, setActiveModule }) {
+function SeatingModule({ guests, tables, newTable, setNewTable, addTable, removeTable, updateTablePosition, assignGuestToTable, unassignGuest, unassignedGuests, getInitials, sceneElements, addSceneElement, removeSceneElement, updateScenePosition, updateSceneScale, updateSceneRotation, seatingView, setSeatingView, setActiveModule, lang, t, tr }) {
   const canvasRef = useRef(null);
   const [dragState, setDragState] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
 
-  const sceneTypes = [
+  const sceneTypes = lang === 'en' ? [
+    { value: 'DJ', label: 'DJ', Icon: Music },
+    { value: 'Parket', label: 'Dance floor', Icon: Users },
+    { value: 'Bar', label: 'Bar', Icon: Martini },
+    { value: 'CandyBar', label: 'Candy Bar', Icon: Candy },
+    { value: 'Svedske', label: 'Buffet tables', Icon: Buffet },
+    { value: 'Vchod', label: 'Entrance', Icon: DoorOpen },
+    { value: 'Vychod', label: 'Exit', Icon: LogOut },
+    { value: 'Svetelny', label: 'Light sign', Icon: Lightbulb },
+    { value: 'Torta', label: 'Cake', Icon: Cake },
+    { value: 'Foto', label: 'Photo booth', Icon: Camera },
+    { value: 'Kvety', label: 'Decoration', Icon: Flower2 },
+  ] : [
     { value: 'DJ', label: 'DJ', Icon: Music },
     { value: 'Parket', label: 'Parket', Icon: Users },
     { value: 'Bar', label: 'Bar', Icon: Martini },
@@ -2495,8 +3966,8 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
   if (guests.length === 0) {
     return (
       <div className="text-center py-20">
-        <p className="serif italic text-xl mb-4" style={{ color: '#6B5946' }}>Najprv pridajte hostí</p>
-        <button onClick={() => setActiveModule('guests')} className="border border-gold gold px-8 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition">Prejsť na Hostia</button>
+        <p className="serif italic text-xl mb-4" style={{ color: '#6B5946' }}>{lang === "en" ? "First add guests" : "Najprv pridajte hostí"}</p>
+        <button onClick={() => setActiveModule('guests')} className="border border-gold gold px-8 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition">{lang === "en" ? "Go to Guests" : "Prejsť na Hostia"}</button>
       </div>
     );
   }
@@ -2504,30 +3975,30 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
   return (
     <>
       <div className="bg-white border hairline rounded-card p-6 mb-6">
-        <p className="text-[10px] tracking-[0.3em] uppercase gold mb-5">Pridať stôl</p>
+        <p className="text-[10px] tracking-[0.3em] uppercase gold mb-5">{t("seating.addTable")}</p>
         <div className="grid md:grid-cols-2 gap-5 mb-5">
           <div>
-            <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Názov stolu</label>
-            <input value={newTable.name} onChange={e => setNewTable({ ...newTable, name: e.target.value })} onKeyPress={e => e.key === 'Enter' && addTable()} placeholder="Napr. Rodina nevesty" className="w-full border-b hairline py-2 bg-transparent" />
+            <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Table name" : "Názov stolu"}</label>
+            <input value={newTable.name} onChange={e => setNewTable({ ...newTable, name: e.target.value })} onKeyPress={e => e.key === 'Enter' && addTable()} placeholder={lang === "en" ? "e.g. Bride's family" : "Napr. Rodina nevesty"} className="w-full border-b hairline py-2 bg-transparent" />
           </div>
           <div>
-            <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Počet miest</label>
+            <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Number of seats" : "Počet miest"}</label>
             <input type="number" min="1" max="30" value={newTable.capacity} onChange={e => setNewTable({ ...newTable, capacity: e.target.value })} className="w-full border-b hairline py-2 bg-transparent" />
           </div>
         </div>
         <div className="mb-5">
           <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Tvar stolu</label>
           <div className="pill-group">
-            <button className={`pill-btn ${newTable.shape === 'Okrúhly' ? 'active' : ''}`} onClick={() => setNewTable({ ...newTable, shape: 'Okrúhly' })}><Circle size={11} style={{ marginRight: 6 }} />Okrúhly</button>
-            <button className={`pill-btn ${newTable.shape === 'Rovný' ? 'active' : ''}`} onClick={() => setNewTable({ ...newTable, shape: 'Rovný' })}><Square size={11} style={{ marginRight: 6 }} />Rovný</button>
+            <button className={`pill-btn ${(newTable.shape === 'Okrúhly' || newTable.shape === 'Round') ? 'active' : ''}`} onClick={() => setNewTable({ ...newTable, shape: lang === 'en' ? 'Round' : 'Okrúhly' })}><Circle size={11} style={{ marginRight: 6 }} />{lang === 'en' ? 'Round' : 'Okrúhly'}</button>
+            <button className={`pill-btn ${(newTable.shape === 'Rovný' || newTable.shape === 'Square') ? 'active' : ''}`} onClick={() => setNewTable({ ...newTable, shape: lang === 'en' ? 'Square' : 'Rovný' })}><Square size={11} style={{ marginRight: 6 }} />{lang === 'en' ? 'Square' : 'Rovný'}</button>
           </div>
         </div>
-        <button onClick={addTable} className="border border-gold gold px-6 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition flex items-center gap-2"><Plus size={14} /> Pridať stôl</button>
+        <button onClick={addTable} className="border border-gold gold px-6 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition flex items-center gap-2"><Plus size={14} /> {t("seating.addTable")}</button>
       </div>
 
       {tables.length > 0 && (
         <div className="bg-white border hairline rounded-card p-6 mb-6">
-          <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4 flex items-center gap-2"><Layers size={12} />Pridať prvky sály</p>
+          <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4 flex items-center gap-2"><Layers size={12} />{lang === "en" ? "Add hall elements" : "Pridať prvky sály"}</p>
           <div className="flex flex-wrap gap-2">
             {sceneTypes.map(s => {
               const Icon = s.Icon;
@@ -2539,16 +4010,16 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
               );
             })}
           </div>
-          <p className="text-xs italic mt-3" style={{ color: '#6B5946' }}>Kliknite na prvok v mape pre zobrazenie ovládačov (posunúť, zväčšiť, otočiť).</p>
+          <p className="text-xs italic mt-3" style={{ color: '#6B5946' }}>{lang === "en" ? "Click on an element on the map to show controls (move, resize, rotate)." : "Kliknite na prvok v mape pre zobrazenie ovládačov (posunúť, zväčšiť, otočiť)."}</p>
         </div>
       )}
 
       {/* UNASSIGNED GUESTS with fixed-positioned dropdown */}
       {unassignedGuests.length > 0 && (
         <div className="bg-white border hairline rounded-card p-6 mb-6">
-          <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">Nezaradení hostia ({unassignedGuests.length})</p>
+          <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">{lang === "en" ? "Unassigned guests" : "Nezaradení hostia"} ({unassignedGuests.length})</p>
           {tables.length === 0 ? (
-            <p className="text-sm italic" style={{ color: '#6B5946' }}>Najprv pridajte aspoň jeden stôl, potom môžete hostí priradiť.</p>
+            <p className="text-sm italic" style={{ color: '#6B5946' }}>{lang === "en" ? "First add at least one table, then you can assign guests." : "Najprv pridajte aspoň jeden stôl, potom môžete hostí priradiť."}</p>
           ) : (
             <div className="space-y-2">
               {unassignedGuests.map((g) => (
@@ -2556,11 +4027,13 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
                   <div className="initial-chip" style={{ position: 'static', width: 34, height: 34, fontSize: 12 }}>{getInitials(g.name)}</div>
                   <div className="flex-1 min-w-0">
                     <div className="serif text-base truncate" style={{ color: '#1E1910' }}>{g.name}</div>
-                    <div className="text-xs" style={{ color: '#6B5946' }}>{g.type === 'Dieťa' ? 'Dieťa' : 'Dospelý'} · {g.side}</div>
+                    <div className="text-xs" style={{ color: '#6B5946' }}>{(g.type === 'Dieťa' || g.type === 'Child') ? t('guests.child') : t('guests.adult')} · {tr(g.side)}</div>
                   </div>
                   <TableAssignSelect
                     tables={tables}
                     onAssign={(tableId) => assignGuestToTable(g.id, tableId)}
+                    lang={lang}
+                    t={t}
                   />
                 </div>
               ))}
@@ -2573,11 +4046,11 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
         <>
           <div className="flex items-center justify-between mb-4">
             <div className="pill-group">
-              <button className={`pill-btn ${seatingView === 'map' ? 'active' : ''}`} onClick={() => setSeatingView('map')}>Mapa sály</button>
-              <button className={`pill-btn ${seatingView === 'list' ? 'active' : ''}`} onClick={() => setSeatingView('list')}>Zoznam stolov</button>
+              <button className={`pill-btn ${seatingView === 'map' ? 'active' : ''}`} onClick={() => setSeatingView('map')}>{lang === 'en' ? 'Hall map' : 'Mapa sály'}</button>
+              <button className={`pill-btn ${seatingView === 'list' ? 'active' : ''}`} onClick={() => setSeatingView('list')}>{lang === 'en' ? 'Table list' : 'Zoznam stolov'}</button>
             </div>
             <p className="text-xs italic hidden sm:block" style={{ color: '#6B5946' }}>
-              {seatingView === 'map' ? 'Klik pre výber · potiahnutie pre posun' : 'Zobrazenie všetkých stolov vedľa seba'}
+              {seatingView === 'map' ? (lang === 'en' ? 'Click to select · drag to move' : 'Klik pre výber · potiahnutie pre posun') : (lang === 'en' ? 'View all tables side by side' : 'Zobrazenie všetkých stolov vedľa seba')}
             </p>
           </div>
 
@@ -2587,12 +4060,12 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
               {tables.map(t => {
                 const tableGuests = guests.filter(g => t.seats.includes(g.id));
                 const count = tableGuests.length;
-                const size = t.shape === 'Okrúhly' ? 130 : 170;
-                const height = t.shape === 'Okrúhly' ? 130 : 80;
+                const size = (t.shape === 'Okrúhly' || t.shape === 'Round') ? 130 : 170;
+                const height = (t.shape === 'Okrúhly' || t.shape === 'Round') ? 130 : 80;
                 const containerSize = 220;
 
                 const getChipPosition = (index) => {
-                  if (t.shape === 'Okrúhly') {
+                  if ((t.shape === 'Okrúhly' || t.shape === 'Round')) {
                     const angle = (index / Math.max(count, 1)) * 2 * Math.PI - Math.PI / 2;
                     const radius = 85;
                     const cx = containerSize / 2, cy = containerSize / 2;
@@ -2622,7 +4095,7 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
                       position: 'absolute', left: '50%', top: '50%',
                       transform: 'translate(-50%, -50%)',
                       width: `${size}px`, height: `${height}px`,
-                      borderRadius: t.shape === 'Okrúhly' ? '50%' : '10px',
+                      borderRadius: (t.shape === 'Okrúhly' || t.shape === 'Round') ? '50%' : '10px',
                       border: '2px solid #9B7A45',
                       background: 'linear-gradient(135deg, #F5EFE3, #EBE1CF)',
                       boxShadow: 'inset 0 2px 8px rgba(176, 141, 87, 0.12), 0 4px 12px rgba(176, 141, 87, 0.1)',
@@ -2636,9 +4109,9 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
                     {tableGuests.map((g, i) => (
                       <div
                         key={g.id}
-                        className={`initial-chip ${g.type === 'Dieťa' ? 'child' : ''}`}
+                        className={`initial-chip ${(g.type === 'Dieťa' || g.type === 'Child') ? 'child' : ''}`}
                         style={{ position: 'absolute', ...getChipPosition(i) }}
-                        title={`${g.name}${g.type === 'Dieťa' ? ' (dieťa)' : ''} — klik pre odstránenie`}
+                        title={`${g.name}${(g.type === 'Dieťa' || g.type === 'Child') ? (lang === 'en' ? ' (child)' : ' (dieťa)') : ''} — ${lang === 'en' ? 'click to remove' : 'klik pre odstránenie'}`}
                         onClick={(e) => { e.stopPropagation(); unassignGuest(g.id); }}
                         onMouseDown={(e) => e.stopPropagation()}
                       >
@@ -2751,9 +4224,9 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
                       </div>
                       <div className="flex justify-center my-5">
                         <div style={{
-                          width: t.shape === 'Okrúhly' ? '120px' : '150px',
-                          height: t.shape === 'Okrúhly' ? '120px' : '70px',
-                          borderRadius: t.shape === 'Okrúhly' ? '50%' : '8px',
+                          width: (t.shape === 'Okrúhly' || t.shape === 'Round') ? '120px' : '150px',
+                          height: (t.shape === 'Okrúhly' || t.shape === 'Round') ? '120px' : '70px',
+                          borderRadius: (t.shape === 'Okrúhly' || t.shape === 'Round') ? '50%' : '8px',
                           border: '2px solid #9B7A45',
                           background: 'linear-gradient(135deg, #F5EFE3, #EBE1CF)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -2770,7 +4243,7 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
                           {tableGuests.map(g => (
                             <li key={g.id} className="flex items-center justify-between text-sm py-0.5 group/item" style={{ color: '#1E1910' }}>
                               <span className="flex items-center gap-2 text-sm">
-                                {g.type === 'Dieťa' ? <Baby size={11} className="gold" /> : <User size={11} className="gold" />}
+                                {(g.type === 'Dieťa' || g.type === 'Child') ? <Baby size={11} className="gold" /> : <User size={11} className="gold" />}
                                 {g.name}
                               </span>
                               <button onClick={() => unassignGuest(g.id)} className="opacity-0 group-hover/item:opacity-100 gold hover:text-red-600 transition"><X size={12} /></button>
@@ -2778,9 +4251,9 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-sm italic text-center py-2" style={{ color: '#6B5946' }}>Prázdny stôl</p>
+                        <p className="text-sm italic text-center py-2" style={{ color: '#6B5946' }}>{lang === "en" ? "Empty table" : "Prázdny stôl"}</p>
                       )}
-                      {isFull && <p className="text-[10px] tracking-[0.2em] uppercase text-amber-600 mt-3 text-center">Obsadený</p>}
+                      {isFull && <p className="text-[10px] tracking-[0.2em] uppercase text-amber-600 mt-3 text-center">{lang === "en" ? "Full" : "Obsadený"}</p>}
                     </div>
                   </div>
                 );
@@ -2789,14 +4262,14 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
           )}
         </>
       ) : (
-        <div className="text-center py-16 serif italic text-lg" style={{ color: '#6B5946' }}>Pridajte prvý stôl vyššie</div>
+        <div className="text-center py-16 serif italic text-lg" style={{ color: '#6B5946' }}>{lang === "en" ? "Add your first table above" : "Pridajte prvý stôl vyššie"}</div>
       )}
     </>
   );
 }
 
 /* ============ FIXED-POSITIONED DROPDOWN (uses viewport coords, renders via portal) ============ */
-function TableAssignSelect({ tables, onAssign }) {
+function TableAssignSelect({ tables, onAssign, lang, t }) {
   const [open, setOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0, direction: 'down' });
   const triggerRef = useRef(null);
@@ -2846,7 +4319,7 @@ function TableAssignSelect({ tables, onAssign }) {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 px-4 py-2 border border-gold rounded-full text-xs tracking-[0.15em] uppercase gold hover:bg-gold hover:text-white transition-all duration-300 whitespace-nowrap flex-shrink-0"
       >
-        <Armchair size={12} /> Priradiť k stolu
+        <Armchair size={12} /> {t("guests.assignToTable")}
         <ChevronDown size={12} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
@@ -2865,7 +4338,7 @@ function TableAssignSelect({ tables, onAssign }) {
             borderRadius: '14px',
           }}
         >
-          <div className="px-4 py-2 text-[10px] tracking-[0.2em] uppercase gold border-b hairline bg-[#F5EFE3] sticky top-0">Vyberte stôl</div>
+          <div className="px-4 py-2 text-[10px] tracking-[0.2em] uppercase gold border-b hairline bg-[#F5EFE3] sticky top-0">{lang === "en" ? "Choose table" : "Vyberte stôl"}</div>
           {tables.map(t => {
             const full = t.seats.length >= t.capacity;
             return (
@@ -2882,7 +4355,7 @@ function TableAssignSelect({ tables, onAssign }) {
                     <div className="serif text-base">{t.name}</div>
                     <div className="text-[10px] tracking-[0.2em] uppercase mt-0.5" style={{ color: '#6B5946' }}>{t.shape} · {t.seats.length} / {t.capacity}</div>
                   </div>
-                  {full && <span className="text-[10px] uppercase tracking-wider text-amber-600">Plný</span>}
+                  {full && <span className="text-[10px] uppercase tracking-wider text-amber-600">{lang === 'en' ? 'Full' : 'Plný'}</span>}
                 </div>
               </button>
             );
@@ -2894,7 +4367,7 @@ function TableAssignSelect({ tables, onAssign }) {
 }
 
 /* ============ CUSTOM DATE PICKER ============ */
-function CustomDatePicker({ value, onChange, placeholder }) {
+function CustomDatePicker({ value, onChange, placeholder, lang = 'sk' }) {
   const [open, setOpen] = useState(false);
   const [viewDate, setViewDate] = useState(() => value ? new Date(value) : new Date());
   const ref = useRef(null);
@@ -2905,8 +4378,12 @@ function CustomDatePicker({ value, onChange, placeholder }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const months = ['Január', 'Február', 'Marec', 'Apríl', 'Máj', 'Jún', 'Júl', 'August', 'September', 'Október', 'November', 'December'];
-  const weekdays = ['Po', 'Ut', 'St', 'Št', 'Pi', 'So', 'Ne'];
+  const months = lang === 'en'
+    ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    : ['Január', 'Február', 'Marec', 'Apríl', 'Máj', 'Jún', 'Júl', 'August', 'September', 'Október', 'November', 'December'];
+  const weekdays = lang === 'en'
+    ? ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+    : ['Po', 'Ut', 'St', 'Št', 'Pi', 'So', 'Ne'];
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -2963,7 +4440,7 @@ function CustomDatePicker({ value, onChange, placeholder }) {
           </div>
           <div className="flex items-center justify-between mt-4 pt-3 border-t hairline">
             <button type="button" onClick={() => { const t = new Date(); setViewDate(t); }} className="text-[10px] tracking-[0.2em] uppercase gold hover:opacity-60">Dnes</button>
-            <button type="button" onClick={() => { onChange(''); setOpen(false); }} className="text-[10px] tracking-[0.2em] uppercase hover:opacity-60" style={{ color: '#6B5946' }}>Vymazať</button>
+            <button type="button" onClick={() => { onChange(''); setOpen(false); }} className="text-[10px] tracking-[0.2em] uppercase hover:opacity-60" style={{ color: '#6B5946' }}>{lang === 'en' ? 'Clear' : 'Vymazať'}</button>
           </div>
         </div>
       )}
@@ -3006,16 +4483,18 @@ function ElegantSelect({ value, onChange, options, compact }) {
   );
 }
 
-function ModuleShell({ title, subtitle, onBack, children }) {
+function ModuleShell({ title, subtitle, onBack, children, lang = 'sk' }) {
   return (
-    <div className="fade-in max-w-6xl mx-auto px-6 py-12 lg:pl-72">
-      <button onClick={onBack} className="text-xs tracking-[0.2em] uppercase gold hover:opacity-60 mb-6 flex items-center gap-2 transition lg:hidden"><Home size={12} /> Späť na prehľad</button>
-      <div className="mb-12 pb-6 border-b hairline">
-        <div className="h-px w-12 bg-gold mb-5" />
-        <h1 className="serif text-4xl md:text-5xl font-normal mb-3" style={{ color: '#1E1910' }}>{title}</h1>
-        <p className="serif italic text-lg" style={{ color: '#6B5946' }}>{subtitle}</p>
+    <div className="fade-in lg:ml-64">
+      <div className="max-w-5xl mx-auto px-6 py-12">
+        <button onClick={onBack} className="text-xs tracking-[0.2em] uppercase gold hover:opacity-60 mb-6 flex items-center gap-2 transition lg:hidden"><Home size={12} /> {lang === 'en' ? 'Back to overview' : 'Späť na prehľad'}</button>
+        <div className="mb-12 pb-6 border-b hairline">
+          <div className="h-px w-12 bg-gold mb-5" />
+          <h1 className="serif text-4xl md:text-5xl font-normal mb-3" style={{ color: '#1E1910' }}>{title}</h1>
+          <p className="serif italic text-lg" style={{ color: '#6B5946' }}>{subtitle}</p>
+        </div>
+        {children}
       </div>
-      {children}
     </div>
   );
 }
@@ -3046,7 +4525,7 @@ function StatCard({ label, value, accent, editable, onChange }) {
 }
 
 /* ============ BULK ASSIGN SELECT — zjednodušený dropdown pre bulk actions ============ */
-function BulkAssignSelect({ tables, onAssign }) {
+function BulkAssignSelect({ tables, onAssign, lang = 'sk' }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -3062,7 +4541,7 @@ function BulkAssignSelect({ tables, onAssign }) {
         onClick={() => setOpen(!open)}
         className="text-[10px] tracking-[0.15em] uppercase gold hover:bg-[#EBE1CF] px-3 py-1.5 rounded-full border hairline flex items-center gap-1.5"
       >
-        <Armchair size={10} /> Priradiť k stolu <ChevronDown size={10} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+        <Armchair size={10} /> {lang === 'en' ? 'Assign to table' : 'Priradiť k stolu'} <ChevronDown size={10} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <div className="absolute right-0 top-full mt-2 bg-white border hairline rounded-soft shadow-2xl overflow-hidden min-w-[220px] max-h-[280px] overflow-y-auto z-50"
@@ -3082,7 +4561,7 @@ function BulkAssignSelect({ tables, onAssign }) {
                     <div className="serif text-sm">{t.name}</div>
                     <div className="text-[10px] tracking-[0.15em] uppercase" style={{ color: '#6B5946' }}>{t.seats.length} / {t.capacity}</div>
                   </div>
-                  {full && <span className="text-[9px] uppercase text-amber-600">Plný</span>}
+                  {full && <span className="text-[9px] uppercase text-amber-600">{lang === "en" ? "Full" : "Plný"}</span>}
                 </div>
               </button>
             );
@@ -3094,11 +4573,62 @@ function BulkAssignSelect({ tables, onAssign }) {
 }
 
 /* ============ STYLE QUIZ MODAL ============ */
-function StyleQuizModal({ onClose }) {
+function StyleQuizModal({ onClose, lang = 'sk' }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
 
-  const questions = [
+  const questions = lang === 'en' ? [
+    {
+      id: 'venue',
+      q: 'Where do you imagine your wedding?',
+      options: [
+        { val: 'chateau', label: 'In a chateau or classical hall', style: 'classic' },
+        { val: 'garden', label: 'In a garden or nature', style: 'boho' },
+        { val: 'modern', label: 'In a modern space / loft', style: 'minimal' },
+        { val: 'rustic', label: 'In a meadow or vineyard', style: 'rustic' },
+      ],
+    },
+    {
+      id: 'feel',
+      q: 'What atmosphere do you want?',
+      options: [
+        { val: 'elegant', label: 'Elegant and classical', style: 'classic' },
+        { val: 'romantic', label: 'Romantic and dreamy', style: 'boho' },
+        { val: 'clean', label: 'Clean and minimalistic', style: 'minimal' },
+        { val: 'warm', label: 'Cozy and family-oriented', style: 'rustic' },
+      ],
+    },
+    {
+      id: 'dress',
+      q: 'Which dresses attract you most?',
+      options: [
+        { val: 'princess', label: 'Full skirt, princess-style', style: 'classic' },
+        { val: 'lace', label: 'Lace, bohemian', style: 'boho' },
+        { val: 'simple', label: 'Clean lines, simple', style: 'minimal' },
+        { val: 'aline', label: 'Classic A-line', style: 'rustic' },
+      ],
+    },
+    {
+      id: 'palette',
+      q: 'Your color palette?',
+      options: [
+        { val: 'white', label: 'White + gold accents', style: 'classic' },
+        { val: 'blush', label: 'Blush pink + dried flowers', style: 'boho' },
+        { val: 'mono', label: 'White + black / gray', style: 'minimal' },
+        { val: 'earth', label: 'Earthy tones + wood', style: 'rustic' },
+      ],
+    },
+    {
+      id: 'detail',
+      q: 'Which detail matters most to you?',
+      options: [
+        { val: 'veil', label: 'Long veil and classic crown', style: 'classic' },
+        { val: 'flowers', label: 'Flowers in hair', style: 'boho' },
+        { val: 'minimal', label: 'Single piece of jewelry, nothing more', style: 'minimal' },
+        { val: 'ribbon', label: 'Rustic ribbon, macramé', style: 'rustic' },
+      ],
+    },
+  ] : [
     {
       id: 'venue',
       q: 'Kde si predstavujete svadbu?',
@@ -3167,7 +4697,12 @@ function StyleQuizModal({ onClose }) {
     Object.values(answers).forEach(s => { counts[s] = (counts[s] || 0) + 1; });
     const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
     if (!top) return null;
-    const styles = {
+    const styles = lang === 'en' ? {
+      classic: { name: 'Classic Elegance', desc: 'You are a woman with timeless taste. You feel best in classical, well-cut dresses with a crown and long veil.', dress: 'A-line, princess or corset dresses with a full skirt' },
+      boho: { name: 'Bohemian Romance', desc: 'You are a dreamy, romantic soul. You love natural materials, lace and looser silhouettes.', dress: 'Lace dresses, looser silhouettes with sleeves, rustic details' },
+      minimal: { name: 'Modern Minimalism', desc: 'You appreciate clean lines and deliberately modest elegance. Less is more.', dress: 'Smooth satin dresses, simple cut, without unnecessary details' },
+      rustic: { name: 'Rustic Warmth', desc: 'You are a woman who values family values and a warm, homey impression.', dress: 'Classic A-line with rustic details — ribbons, patterns, natural lace' },
+    } : {
       classic: { name: 'Klasická elegancia', desc: 'Ste žena s nadčasovým vkusom. Cítite sa najlepšie v klasických, dobre strihnutých šatách s korunkou a dlhým závojom.', dress: 'A-línia, princeznovské alebo korzetové šaty s bohatou sukňou' },
       boho: { name: 'Bohémska romantika', desc: 'Ste snová, romantická duša. Milujete prírodné materiály, čipku a voľnejšie siluety.', dress: 'Čipkované šaty, voľnejšie siluety s rukávmi, rustikálne detaily' },
       minimal: { name: 'Moderný minimalizmus', desc: 'Oceníte čisté línie a zámerne skromnú eleganciu. Menej je viac.', dress: 'Hladké saténové šaty, jednoduchý strih, bez prebytočných detailov' },
@@ -3181,9 +4716,9 @@ function StyleQuizModal({ onClose }) {
       <div className="bg-white rounded-card max-w-2xl w-full p-8 md:p-10 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-2">Štýlový kvíz</p>
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-2">{lang === "en" ? "Style Quiz" : "Štýlový kvíz"}</p>
             {step < questions.length && (
-              <p className="text-xs" style={{ color: '#6B5946' }}>Otázka {step + 1} z {questions.length}</p>
+              <p className="text-xs" style={{ color: '#6B5946' }}>{lang === "en" ? `Question ${step + 1} of ${questions.length}` : `Otázka ${step + 1} z ${questions.length}`}</p>
             )}
           </div>
           <button onClick={onClose} className="gold hover:opacity-60"><X size={22} /></button>
@@ -3217,7 +4752,7 @@ function StyleQuizModal({ onClose }) {
 
             {step > 0 && (
               <button onClick={() => setStep(step - 1)} className="text-xs tracking-wider uppercase gold hover:opacity-60 mt-6 flex items-center gap-2">
-                <ChevronLeft size={14} /> Späť
+                <ChevronLeft size={14} /> {lang === "en" ? "Back" : "Späť"}
               </button>
             )}
           </>
@@ -3225,7 +4760,7 @@ function StyleQuizModal({ onClose }) {
           /* VÝSLEDOK */
           <div className="text-center fade-in">
             <SparklesIcon size={28} strokeWidth={1.2} className="gold mx-auto mb-4" />
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">Váš štýl je</p>
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">{lang === "en" ? "Your style is" : "Váš štýl je"}</p>
             <h3 className="serif text-4xl font-normal mb-5" style={{ color: '#1E1910' }}>
               <em>{result?.name}</em>
             </h3>
@@ -3233,7 +4768,7 @@ function StyleQuizModal({ onClose }) {
               {result?.desc}
             </p>
             <div className="bg-gradient-to-br from-[#F5EFE3] to-[#EBE1CF] rounded-card p-6 mb-6">
-              <p className="text-[10px] tracking-[0.25em] uppercase gold mb-2">Odporúčame vám</p>
+              <p className="text-[10px] tracking-[0.25em] uppercase gold mb-2">{lang === "en" ? "We recommend" : "Odporúčame vám"}</p>
               <p className="serif italic text-lg" style={{ color: '#1E1910' }}>{result?.dress}</p>
             </div>
 
@@ -3244,14 +4779,14 @@ function StyleQuizModal({ onClose }) {
                 rel="noopener noreferrer"
                 className="bg-gold text-white px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:opacity-90 transition flex items-center gap-2"
               >
-                <ImageIcon size={14} /> Pozrieť kolekciu
+                <ImageIcon size={14} /> {lang === "en" ? "View collection" : "Pozrieť kolekciu"}
               </a>
               <a href="https://www.janveil.sk/skuska-svadobnych-siat/#termin" target="_blank" rel="noopener noreferrer"
                 className="border border-gold gold px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition">
-                Objednať skúšku
+                {lang === "en" ? "Book fitting" : "Objednať skúšku"}
               </a>
               <button onClick={() => { setStep(0); setAnswers({}); }} className="border hairline gold px-6 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gray-50 transition">
-                Opakovať kvíz
+                {lang === "en" ? "Repeat quiz" : "Opakovať kvíz"}
               </button>
             </div>
           </div>
