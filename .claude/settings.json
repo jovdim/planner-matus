@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/lorem/Downloads/matus/**)",
+      "Bash(grep -v \"^d.*\\\\.\\\\.$\")",
+      "Bash(grep -v \"^d.*\\\\.$\")"
+    ]
+  }
+}

@@ -2,7 +2,9 @@
 <html lang="sk" data-theme="light">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#F2EDE3" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#1A1510" media="(prefers-color-scheme: dark)" />
 
 <!-- ============ PRIMARY SEO ============ -->
 <title>Extra služby | Svadobný salón JanVeil — Zlaté Moravce</title>
@@ -225,10 +227,6 @@
     margin-left: 28px; transition: color 0.3s;
   }
   nav a:hover { color: var(--gold); }
-  @media (max-width: 768px) {
-    nav a { margin-left: 14px; font-size: 10px; }
-    nav a:not(.nav-cta):not(.nav-tool) { display: none; }
-  }
   .nav-cta {
     border: 1px solid var(--gold); color: var(--gold) !important;
     padding: 8px 18px; border-radius: 999px;
@@ -364,6 +362,8 @@
   }
   .coming-badge {
     display: inline-block;
+    align-self: flex-start;
+    width: auto;
     font-size: 9px;
     letter-spacing: 0.3em;
     text-transform: uppercase;
@@ -428,8 +428,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 36px;
   }
-  @media (max-width: 720px) {
-    .contact-wrap { padding: 28px 22px; }
+  @media (max-width: 640px) {
     .contact-grid { grid-template-columns: 1fr; gap: 24px; }
   }
   .contact-item { }
@@ -519,6 +518,153 @@
     * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     .fade-up { opacity: 1; transform: none; }
   }
+
+  /* ============================================================ */
+  /* ============ TABLET (641px – 900px) ===================== */
+  /* ============================================================ */
+  @media (min-width: 641px) and (max-width: 900px) {
+    nav a { margin-left: 18px; font-size: 10px; letter-spacing: 0.15em; }
+    .nav-tools { margin-left: 14px; }
+    .nav-cta { padding: 8px 16px; font-size: 10px; }
+    .logo-tag { white-space: nowrap; }
+  }
+
+  /* ============================================================ */
+  /* ============ MOBILE (≤ 640px) =========================== */
+  /* ============================================================ */
+  @media (max-width: 640px) {
+    .container { padding: 0 18px; }
+
+    /* Header — kompaktnejší na mobile */
+    .header-inner { padding: 12px 0; gap: 8px; }
+    .logo-mark { width: 34px; height: 34px; font-size: 18px; }
+    .logo-text { font-size: 18px; }
+    .logo-tag { font-size: 8px; letter-spacing: 0.25em; }
+
+    /* Navigácia — schováme textové linky a necháme len nástroje */
+    nav { display: flex; align-items: center; }
+    nav a:not(.nav-cta):not(.nav-tool) { display: none; }
+
+    .nav-cta {
+      padding: 7px 14px;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      margin-left: 0;
+      white-space: nowrap;
+    }
+
+    .nav-tools { margin-left: 10px; gap: 6px; }
+    .nav-tool { padding: 6px 10px; font-size: 10px; min-width: 36px; justify-content: center; }
+
+    /* Hero */
+    .hero { padding: 40px 0 28px; }
+    .hero-eyebrow { font-size: 9px; letter-spacing: 0.3em; margin-bottom: 14px; }
+    .hero h1 { font-size: clamp(28px, 8vw, 40px); margin-bottom: 14px; }
+    .hero-sub { font-size: 15px; padding: 0 8px; }
+    .hero-rule { margin-bottom: 18px; }
+
+    /* Sekcie */
+    section { padding: 36px 0; }
+    .section-header { margin-bottom: 28px; }
+    .section-eyebrow { font-size: 9px; letter-spacing: 0.3em; }
+    .section-title { font-size: clamp(24px, 6vw, 32px); }
+    .section-sub { font-size: 15px; padding: 0 8px; }
+
+    /* Karty služieb — full-width na mobile, bez pevného pomeru strán */
+    .services-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+    .service-card {
+      aspect-ratio: auto;
+      min-height: 260px;
+      padding: 26px;
+    }
+    .service-title { font-size: 24px; }
+    .service-desc { font-size: 14px; }
+    .service-icon { width: 42px; height: 42px; }
+    .service-icon svg { width: 20px; height: 20px; }
+
+    /* Kontakt */
+    .contact-wrap { padding: 28px 20px; }
+    .contact-grid { gap: 24px; }
+    .contact-value { font-size: 17px; }
+    .contact-value .italic { font-size: 14px; }
+    .map-btn { padding: 12px 22px; width: 100%; justify-content: center; }
+
+    /* Footer */
+    footer { padding: 32px 0 20px; margin-top: 20px; }
+    .footer-links { gap: 14px; font-size: 10px; }
+  }
+
+  /* ============================================================ */
+  /* ============ SMALL MOBILE (≤ 420px) ==================== */
+  /* ============================================================ */
+  @media (max-width: 420px) {
+    .container { padding: 0 14px; }
+
+    /* Logo tag môže byť skrytý pre viac miesta */
+    .logo-tag { display: none; }
+    .logo-text { font-size: 17px; }
+
+    /* CTA skrátime na ikonu / kratšie */
+    .nav-cta {
+      padding: 7px 12px;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+    }
+
+    .nav-tools { margin-left: 6px; gap: 4px; }
+    .nav-tool {
+      padding: 6px 8px;
+      font-size: 9px;
+      min-width: 32px;
+    }
+    .nav-tool svg { width: 13px; height: 13px; }
+
+    /* Hero */
+    .hero { padding: 28px 0 20px; }
+    .hero h1 { font-size: 28px; line-height: 1.1; }
+    .hero-sub { font-size: 14px; line-height: 1.5; }
+
+    /* Sekcie */
+    section { padding: 28px 0; }
+    .section-title { font-size: 24px; }
+    .section-sub { font-size: 14px; }
+
+    /* Karty */
+    .service-card { padding: 22px; min-height: 240px; }
+    .service-title { font-size: 22px; }
+    .service-desc { font-size: 13.5px; }
+
+    /* Kontakt */
+    .contact-wrap { padding: 24px 16px; border-radius: 16px; }
+    .contact-value { font-size: 16px; }
+    .contact-label { font-size: 9px; letter-spacing: 0.25em; }
+
+    /* Footer */
+    .footer-links { gap: 12px; }
+    .footer-links a { font-size: 9.5px; letter-spacing: 0.15em; }
+    .footer-bottom { font-size: 9.5px; }
+  }
+
+  /* ============================================================ */
+  /* ============ VERY SMALL (≤ 340px) — iPhone SE, staré ===== */
+  /* ============================================================ */
+  @media (max-width: 340px) {
+    .nav-cta {
+      padding: 6px 10px;
+      font-size: 8.5px;
+    }
+    .nav-tool { padding: 5px 7px; min-width: 28px; }
+    .hero h1 { font-size: 26px; }
+    .service-card { padding: 20px; }
+  }
+
+  /* Prevencia horizontálneho scrollu */
+  html, body { overflow-x: hidden; max-width: 100%; }
 </style>
 </head>
 <body>
@@ -535,7 +681,7 @@
     </a>
     <nav aria-label="Main navigation">
       <a href="https://www.janveil.sk/svadobne-saty/" data-i18n="nav.collections">Kolekcie</a>
-      <a href="https://www.janveil.sk/o-nas/" data-i18n="nav.about">O nás</a>
+      <a href="https://www.janveil.sk/svadobny-salon-janveil/" data-i18n="nav.about">O nás</a>
       <a href="https://www.janveil.sk/kontakt/" data-i18n="nav.contact">Kontakt</a>
       <a href="https://www.janveil.sk/skuska-svadobnych-siat/#termin" class="nav-cta" data-i18n="nav.cta">Objednať skúšku</a>
       <span class="nav-tools">
@@ -604,25 +750,33 @@
         </span>
       </a>
 
-      <!-- ========= KARTA 02: PRIPRAVUJEME ========= -->
-      <div class="service-card coming-soon fade-up" aria-label="Pripravujeme">
+      <!-- ========= KARTA 02: DIGITÁLNA POZVÁNKA ========= -->
+      <a href="https://janveil.com/pozvanka" class="service-card fade-up" aria-label="Digitálna pozvánka">
         <div>
           <div class="service-head">
             <div class="service-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2l2.39 4.84L20 7.58l-4 3.9.94 5.52L12 14.4l-4.94 2.6L8 11.48l-4-3.9 5.61-.74L12 2z"/>
+                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                <path d="M3 7l9 6 9-6"/>
+                <path d="M16 3l1.5 2L20 4l-1 2.5L21 8"/>
               </svg>
             </div>
             <span class="service-stat">02</span>
           </div>
-          <h3 class="service-title" data-i18n="card2.title">Pripravujeme</h3>
+          <h3 class="service-title" data-i18n-html="card2.title">Digitálna <em style="font-style:italic">pozvánka</em></h3>
           <p class="service-desc" data-i18n="card2.desc">
-            Pracujeme na ďalšej službe, ktorá vám spríjemní cestu k svadobnému dňu.
-            Čoskoro sa máte na čo tešiť.
+            Elegantná svadobná webstránka s RSVP formulárom, QR kódom na zdieľanie
+            a dvojjazyčnou podporou. Vaši hostia potvrdia účasť jedným klikom —
+            vy máte všetko prehľadne na jednom mieste.
           </p>
         </div>
-        <span class="coming-badge" data-i18n="card2.badge">Čoskoro</span>
-      </div>
+        <span class="service-cta">
+          <span data-i18n="card2.cta">Vytvoriť pozvánku</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M13 5l7 7-7 7"/>
+          </svg>
+        </span>
+      </a>
 
       <!-- ========= KARTA 03: PRIPRAVUJEME ========= -->
       <div class="service-card coming-soon fade-up" aria-label="Pripravujeme">
@@ -710,7 +864,7 @@
     </p>
     <div class="footer-links">
       <a href="https://www.janveil.sk/svadobne-saty/" data-i18n="footer.dresses">Svadobné šaty</a>
-      <a href="https://www.janveil.sk/o-nas/" data-i18n="footer.about">O nás</a>
+      <a href="https://www.janveil.sk/svadobny-salon-janveil/" data-i18n="footer.about">O nás</a>
       <a href="https://www.janveil.sk/kontakt/" data-i18n="footer.contact">Kontakt</a>
       <a href="https://www.facebook.com/JanVeilsvadobnysalon" target="_blank" rel="noopener">Facebook</a>
     </div>
@@ -744,6 +898,7 @@
       'nav.about': 'O nás',
       'nav.contact': 'Kontakt',
       'nav.cta': 'Objednať skúšku',
+      'nav.ctaShort': 'Objednať',
       'hero.eyebrow': 'Extra služby',
       'hero.title': 'Viac než len <em>svadobné&nbsp;šaty</em>',
       'hero.sub': 'V salóne JanVeil veríme, že každý detail vašej svadby si zaslúži pozornosť. Preto pre naše nevesty pripravujeme nadštandardné služby, ktoré vám cestu k vysnívanému dňu spríjemnia a zjednodušia.',
@@ -753,9 +908,9 @@
       'card1.title': 'Svadobný <em style="font-style:italic">plánovač</em>',
       'card1.desc': 'Interaktívny online nástroj pre každú nevestu — rozpočet, zoznam hostí, zasadací poriadok, úlohy a časový plán na jednom mieste. Prehľadne, elegantne a presne podľa vašich predstáv.',
       'card1.cta': 'Otvoriť plánovač',
-      'card2.title': 'Pripravujeme',
-      'card2.desc': 'Pracujeme na ďalšej službe, ktorá vám spríjemní cestu k svadobnému dňu. Čoskoro sa máte na čo tešiť.',
-      'card2.badge': 'Čoskoro',
+      'card2.title': 'Digitálna <em style="font-style:italic">pozvánka</em>',
+      'card2.desc': 'Elegantná svadobná webstránka s RSVP formulárom, QR kódom na zdieľanie a dvojjazyčnou podporou. Vaši hostia potvrdia účasť jedným klikom — vy máte všetko prehľadne na jednom mieste.',
+      'card2.cta': 'Vytvoriť pozvánku',
       'card3.title': 'Pripravujeme',
       'card3.desc': 'Ďalšia exkluzívna služba pre naše nevesty je na ceste. Dajte nám chvíľku — oplatí sa vám počkať.',
       'card3.badge': 'Čoskoro',
@@ -786,6 +941,7 @@
       'nav.about': 'About',
       'nav.contact': 'Contact',
       'nav.cta': 'Book a fitting',
+      'nav.ctaShort': 'Book',
       'hero.eyebrow': 'Extra services',
       'hero.title': 'More than just a <em>wedding&nbsp;dress</em>',
       'hero.sub': 'At JanVeil, we believe every detail of your wedding deserves attention. That\'s why we prepare premium services for our brides to make the journey to your dream day easier and more enjoyable.',
@@ -795,9 +951,9 @@
       'card1.title': 'Wedding <em style="font-style:italic">planner</em>',
       'card1.desc': 'An interactive online tool for every bride — budget, guest list, seating plan, tasks and timeline in one place. Clear, elegant, and exactly as you imagine it.',
       'card1.cta': 'Open the planner',
-      'card2.title': 'Coming soon',
-      'card2.desc': 'We\'re working on another service to make your journey to the wedding day even more enjoyable. Something to look forward to.',
-      'card2.badge': 'Soon',
+      'card2.title': 'Digital <em style="font-style:italic">invitation</em>',
+      'card2.desc': 'An elegant wedding website with an RSVP form, QR code for easy sharing, and bilingual support. Your guests confirm their attendance with one click — and you have everything clearly in one place.',
+      'card2.cta': 'Create invitation',
       'card3.title': 'Coming soon',
       'card3.desc': 'Another exclusive service for our brides is on its way. Give us a moment — it will be worth the wait.',
       'card3.badge': 'Soon',
@@ -840,6 +996,9 @@
       if (dict[key]) el.innerHTML = dict[key];
     });
 
+    // Skrátené CTA pre malé obrazovky
+    applyResponsiveCta(dict);
+
     // Meta title + description
     if (dict['meta.title']) document.title = dict['meta.title'];
     const descMeta = document.querySelector('meta[name="description"]');
@@ -850,6 +1009,24 @@
 
     localStorage.setItem('janveil-lang', lang);
   }
+
+  // Skrátenie CTA "Objednať skúšku" → "Objednať" na malých obrazovkách
+  function applyResponsiveCta(dict) {
+    const ctaEl = document.querySelector('.nav-cta[data-i18n="nav.cta"]');
+    if (!ctaEl) return;
+    const isSmall = window.matchMedia('(max-width: 420px)').matches;
+    ctaEl.textContent = isSmall ? dict['nav.ctaShort'] : dict['nav.cta'];
+  }
+
+  // Prispôsobenie pri resize
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      const currentLang = document.documentElement.lang || 'sk';
+      applyResponsiveCta(translations[currentLang]);
+    }, 150);
+  });
 
   // ============ THEME (LIGHT / DARK) ============
   const sunIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';

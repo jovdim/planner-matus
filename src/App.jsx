@@ -314,6 +314,7 @@ export default function App() {
   ]);
   const [newDocument, setNewDocument] = useState('');
 
+
   // Search & filter hostia
   const [guestSearch, setGuestSearch] = useState('');
   const [guestFilter, setGuestFilter] = useState('all'); // all | confirmed | pending | rejected | children | allergies
@@ -2172,6 +2173,31 @@ export default function App() {
         .bg-gold { background-color: #9B7A45; }
         .border-gold { border-color: #9B7A45; }
 
+        /* === SCROLLBAR HIDE === */
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+        /* === MOBILE OPTIMIZATIONS === */
+        @media (max-width: 640px) {
+          /* Zabráni pretekaniu obsahu */
+          body { overflow-x: hidden; }
+          /* Menšie border-radius na mobile */
+          .rounded-card { border-radius: 14px; }
+          /* Input polia majú väčší font na mobile aby iOS nezoomoval */
+          input[type="text"], input[type="number"], input[type="email"],
+          input[type="tel"], input[type="date"], input[type="time"],
+          input[type="search"], textarea, select {
+            font-size: 16px !important;
+          }
+          /* Responsive pill buttons - menšie gap-y na mobile */
+          .pill-group { flex-wrap: wrap; gap: 4px; }
+          /* Modaly full-width na malých telefónoch */
+          .modal-content { margin: 0.5rem; max-height: calc(100vh - 1rem); }
+        }
+
+        /* Zamedzíme horizontálnemu scrollovaniu na celej stránke */
+        html { overflow-x: hidden; }
+
         /* === DARK MODE (prestavané) === */
         .theme-dark { color-scheme: dark; }
         .theme-dark .hairline { border-color: #3D3528 !important; }
@@ -2309,7 +2335,8 @@ export default function App() {
         .budget-input-wrapper input { background: transparent; border: 0; outline: none; width: 100%; text-align: right; padding-right: 4px; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: #1E1910; }
         .budget-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #9B7A45; margin-bottom: 6px; display: block; }
 
-        .venue-canvas { position: relative; width: 100%; height: 760px; background: linear-gradient(rgba(176, 141, 87, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(176, 141, 87, 0.04) 1px, transparent 1px), linear-gradient(135deg, #F5EFE3 0%, #EBE1CF 100%); background-size: 40px 40px, 40px 40px, 100% 100%; border-radius: 20px; overflow: hidden; border: 1px solid #E5DFD3; touch-action: none; user-select: none; }
+        .venue-canvas { position: relative; width: 100%; height: 560px; background: linear-gradient(rgba(176, 141, 87, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(176, 141, 87, 0.04) 1px, transparent 1px), linear-gradient(135deg, #F5EFE3 0%, #EBE1CF 100%); background-size: 40px 40px, 40px 40px, 100% 100%; border-radius: 20px; overflow: hidden; border: 1px solid #E5DFD3; touch-action: none; user-select: none; }
+        @media (min-width: 768px) { .venue-canvas { height: 760px; } }
 
         .draggable-table { position: absolute; cursor: grab; transition: box-shadow 0.3s ease, transform 0.2s ease; }
         .draggable-table.dragging { cursor: grabbing; z-index: 100; }
@@ -2338,20 +2365,29 @@ export default function App() {
       `}</style>
 
       <header className="border-b hairline sticky top-0 z-40 backdrop-blur" style={{ backgroundColor: theme === 'dark' ? 'rgba(26, 21, 16, 0.92)' : 'rgba(251, 248, 244, 0.85)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setActiveModule('home')} className="flex items-center gap-3 group flex-shrink-0">
-              <div className="w-10 h-10 border border-gold flex items-center justify-center rounded-full group-hover:bg-gold transition-all duration-500">
-                <span className="serif text-lg gold group-hover:text-white transition-colors duration-500">J</span>
+        <div className="max-w-7xl mx-auto px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-2 md:gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <button onClick={() => setActiveModule('home')} className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
+              <div className="w-9 h-9 md:w-10 md:h-10 border border-gold flex items-center justify-center rounded-full group-hover:bg-gold transition-all duration-500">
+                <span className="serif text-xs md:text-sm font-medium tracking-tight gold group-hover:text-white transition-colors duration-500">JV</span>
               </div>
               <div className="text-left hidden sm:block">
-                <div className="serif text-xl tracking-wide" style={{ color: theme === 'dark' ? '#EBE1CF' : '#1E1910' }}>JanVeil</div>
-                <div className="text-[10px] tracking-[0.2em] uppercase gold">{lang === "en" ? "Wedding Planner" : "Svadobný plánovač"}</div>
+                <div className="serif text-lg md:text-xl tracking-wide" style={{ color: theme === 'dark' ? '#EBE1CF' : '#1E1910' }}>JanVeil</div>
+                <div className="text-[9px] md:text-[10px] tracking-[0.2em] uppercase gold">{lang === "en" ? "Wedding Planner" : "Svadobný plánovač"}</div>
               </div>
             </button>
+
+            {/* Tlačidlo na návrat na hlavnú stránku janveil.sk */}
+            <a
+              href="https://www.janveil.com"
+              className="hidden md:flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase gold hover:opacity-70 transition border-l hairline pl-4 ml-2"
+              title={lang === 'en' ? 'Back to janveil.com' : 'Späť na janveil.com'}
+            >
+              <ChevronLeft size={12} /> janveil.com
+            </a>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
             {/* Language toggle */}
             <button
               onClick={() => switchLanguage(lang === 'sk' ? 'en' : 'sk')}
@@ -2371,13 +2407,13 @@ export default function App() {
             {/* Theme toggle */}
             <button
               onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-              className="w-9 h-9 flex items-center justify-center gold hover:opacity-70 transition"
+              className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center gold hover:opacity-70 transition"
               title={theme === 'light' ? (lang === 'en' ? 'Dark mode' : 'Tmavý režim') : (lang === 'en' ? 'Light mode' : 'Svetlý režim')}
             >
               {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
             </button>
 
-            {/* Share */}
+            {/* Share - skrytý na mobile, tam je v sidebare */}
             <button
               onClick={generateShareLink}
               className="hidden md:flex text-xs tracking-wider uppercase gold hover:opacity-60 transition items-center gap-1.5"
@@ -2386,22 +2422,31 @@ export default function App() {
               <Share2 size={14} /> <span className="hidden lg:inline">{t("actions.share")}</span>
             </button>
 
+            {/* Share ikona na mobile */}
+            <button
+              onClick={generateShareLink}
+              className="md:hidden w-8 h-8 flex items-center justify-center gold hover:opacity-70 transition"
+              title={lang === "en" ? "Share" : "Zdieľať"}
+            >
+              <Share2 size={16} />
+            </button>
+
             <button onClick={() => setShowExport(true)} className="text-xs tracking-wider uppercase gold hover:opacity-60 transition hidden sm:flex items-center gap-1.5"><Download size={14} /> <span className="hidden md:inline">{t("actions.export")}</span></button>
             <button onClick={() => setShowImport(true)} className="text-xs tracking-wider uppercase gold hover:opacity-60 transition hidden sm:flex items-center gap-1.5"><Upload size={14} /> <span className="hidden md:inline">{t("actions.import")}</span></button>
           </div>
         </div>
 
-        {/* Mobile nav — horizontálny scroll tabs vycentrované */}
+        {/* Mobile nav — horizontálny scroll tabs */}
         {activeModule !== 'home' && (
-          <div className="lg:hidden border-t hairline overflow-x-auto">
-            <div className="flex items-center justify-center gap-1 px-4 py-2 min-w-max mx-auto">
+          <div className="lg:hidden border-t hairline overflow-x-auto scrollbar-hide">
+            <div className="flex items-center gap-1 px-3 py-2 w-max">
               {modules.map(m => {
                 const Icon = m.icon;
                 return (
                   <button
                     key={m.id}
                     onClick={() => setActiveModule(m.id)}
-                    className={`px-3 py-1.5 text-[10px] tracking-[0.15em] uppercase rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 ${activeModule === m.id ? 'bg-gold text-white' : 'gold'}`}
+                    className={`px-3 py-1.5 text-[10px] tracking-[0.15em] uppercase rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 flex-shrink-0 ${activeModule === m.id ? 'bg-gold text-white' : 'gold'}`}
                   >
                     <Icon size={12} /> {m.title}
                   </button>
@@ -2482,9 +2527,15 @@ export default function App() {
                 href="https://www.janveil.sk/svadobne-saty/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center text-[10px] tracking-[0.2em] uppercase border border-gold gold rounded-full py-2 hover:bg-gold hover:text-white transition"
+                className="block text-center text-[10px] tracking-[0.2em] uppercase border border-gold gold rounded-full py-2 hover:bg-gold hover:text-white transition mb-2"
               >
                 {t('hero.ourCollection')}
+              </a>
+              <a
+                href="https://www.janveil.com"
+                className="block text-center text-[10px] tracking-[0.2em] uppercase gold hover:opacity-70 transition py-1.5"
+              >
+                ← janveil.com
               </a>
             </div>
           </div>
@@ -2493,28 +2544,28 @@ export default function App() {
 
       {activeModule === 'home' && (
         <div className="fade-in">
-          <section className="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
+          <section className="max-w-6xl mx-auto px-4 md:px-6 pt-10 md:pt-20 pb-10 md:pb-16 text-center">
             <div className="inline-block mb-8">
               <div className="h-px w-16 bg-gold mx-auto mb-6" />
               <p className="text-[10px] tracking-[0.35em] uppercase gold">{t('hero.tagline')}</p>
             </div>
-            <h1 className="serif text-5xl md:text-7xl font-normal leading-tight mb-6" style={{ color: '#1E1910' }}>
+            <h1 className="serif text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-normal leading-tight mb-6" style={{ color: '#1E1910' }}>
               {t('hero.title1')}<br />
               <em className="font-normal">{t('hero.title2')}</em>
             </h1>
-            <p className="max-w-xl mx-auto text-base leading-relaxed mb-12" style={{ color: '#4A3F2E' }}>
+            <p className="max-w-xl mx-auto text-sm md:text-base leading-relaxed mb-8 md:mb-12 px-2" style={{ color: '#4A3F2E' }}>
               {t('hero.subtitle')}
             </p>
 
-            <div className="max-w-xl mx-auto bg-white border hairline rounded-card p-8 md:p-10 mb-4" style={{ boxShadow: '0 4px 24px -8px rgba(176, 141, 87, 0.12)' }}>
+            <div className="max-w-xl mx-auto bg-white border hairline rounded-card p-5 sm:p-8 md:p-10 mb-4" style={{ boxShadow: '0 4px 24px -8px rgba(176, 141, 87, 0.12)' }}>
               {daysUntil !== null && daysUntil >= 0 ? (
                 <div>
                   <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">{t('hero.daysUntil')}</p>
-                  <div className="serif text-6xl md:text-7xl font-normal mb-2" style={{ color: '#1E1910' }}>{daysUntil}</div>
+                  <div className="serif text-5xl sm:text-6xl md:text-7xl font-normal mb-2" style={{ color: '#1E1910' }}>{daysUntil}</div>
                   <p className="text-sm" style={{ color: '#4A3F2E' }}>{daysUntil === 1 ? t('hero.day') : daysUntil < 5 ? t('hero.days2_4') : t('hero.days5plus')}</p>
-                  {coupleName && <p className="serif text-xl mt-4 italic" style={{ color: '#1E1910' }}>{coupleName}</p>}
+                  {coupleName && <p className="serif text-lg sm:text-xl mt-4 italic break-words" style={{ color: '#1E1910' }}>{coupleName}</p>}
                   {countdownMessage && (
-                    <p className="serif italic text-base mt-5 pt-5 border-t hairline" style={{ color: '#6B5946' }}>
+                    <p className="serif italic text-sm sm:text-base mt-5 pt-5 border-t hairline" style={{ color: '#6B5946' }}>
                       {countdownMessage}
                     </p>
                   )}
@@ -2535,7 +2586,7 @@ export default function App() {
             </div>
           </section>
 
-          <section className="max-w-6xl mx-auto px-6 pb-24">
+          <section className="max-w-6xl mx-auto px-4 md:px-6 pb-16 md:pb-24">
             <div className="text-center mb-8">
               <div className="h-px w-12 bg-gold mx-auto mb-5" />
               <h2 className="serif text-3xl md:text-4xl font-normal" style={{ color: '#1E1910' }}>
@@ -2558,23 +2609,23 @@ export default function App() {
                 </button>
               )}
             </div>
-            <div className="grid md:grid-cols-2 gap-5 stagger">
+            <div className="grid md:grid-cols-2 gap-3 md:gap-5 stagger">
               {modules.map((m) => {
                 const Icon = m.icon;
                 return (
                   <button key={m.id} onClick={() => setActiveModule(m.id)}
                     onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`); e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`); }}
-                    className="card-hover rounded-card text-left bg-white border hairline p-8 group">
+                    className="card-hover rounded-card text-left bg-white border hairline p-5 md:p-8 group">
                     <div className="relative z-10">
-                      <div className="flex items-start justify-between mb-6">
-                        <div className="w-12 h-12 rounded-full border hairline flex items-center justify-center group-hover:border-gold group-hover:rotate-12 transition-all duration-500">
-                          <Icon size={20} strokeWidth={1.2} className="gold" />
+                      <div className="flex items-start justify-between mb-4 md:mb-6">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border hairline flex items-center justify-center group-hover:border-gold group-hover:rotate-12 transition-all duration-500">
+                          <Icon size={18} strokeWidth={1.2} className="gold" />
                         </div>
-                        <span className="serif text-2xl font-normal gold">{m.stat}</span>
+                        <span className="serif text-xl md:text-2xl font-normal gold">{m.stat}</span>
                       </div>
-                      <h3 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>{m.title}</h3>
-                      <p className="text-sm leading-relaxed mb-5" style={{ color: '#4A3F2E' }}>{m.desc}</p>
-                      <div className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase gold group-hover:gap-3 transition-all duration-300">{t('hero.open')} <ChevronRight size={14} /></div>
+                      <h3 className="serif text-xl md:text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>{m.title}</h3>
+                      <p className="text-xs md:text-sm leading-relaxed mb-4 md:mb-5" style={{ color: '#4A3F2E' }}>{m.desc}</p>
+                      <div className="flex items-center gap-2 text-[10px] md:text-xs tracking-[0.2em] uppercase gold group-hover:gap-3 transition-all duration-300">{t('hero.open')} <ChevronRight size={14} /></div>
                     </div>
                   </button>
                 );
@@ -2583,29 +2634,29 @@ export default function App() {
           </section>
 
           {/* Šaty od JanVeil — gallery teaser + style quiz */}
-          <section className="max-w-6xl mx-auto px-6 pb-16">
-            <div className="text-center mb-10">
-              <div className="h-px w-12 bg-gold mx-auto mb-5" />
-              <h2 className="serif text-3xl md:text-4xl font-normal" style={{ color: '#1E1910' }}>{t('hero.discoverDresses')}</h2>
-              <p className="serif italic text-base mt-3" style={{ color: '#6B5946' }}>{t('hero.discoverDressesSub')}</p>
+          <section className="max-w-6xl mx-auto px-4 md:px-6 pb-12 md:pb-16">
+            <div className="text-center mb-8 md:mb-10">
+              <div className="h-px w-12 bg-gold mx-auto mb-4 md:mb-5" />
+              <h2 className="serif text-2xl sm:text-3xl md:text-4xl font-normal px-2" style={{ color: '#1E1910' }}>{t('hero.discoverDresses')}</h2>
+              <p className="serif italic text-sm md:text-base mt-3 px-2" style={{ color: '#6B5946' }}>{t('hero.discoverDressesSub')}</p>
             </div>
-            <div className="grid md:grid-cols-2 gap-5">
+            <div className="grid md:grid-cols-2 gap-3 md:gap-5">
               <a
                 href="https://www.janveil.sk/svadobne-saty/"
                 target="_blank"
                 rel="noopener noreferrer"
                 onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`); e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`); }}
-                className="card-hover rounded-card bg-white border hairline p-8 text-left group block"
+                className="card-hover rounded-card bg-white border hairline p-5 md:p-8 text-left group block"
               >
                 <div className="relative z-10">
-                  <div className="w-12 h-12 rounded-full border hairline flex items-center justify-center mb-5 group-hover:border-gold group-hover:rotate-12 transition-all duration-500">
-                    <ImageIcon size={20} strokeWidth={1.2} className="gold" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border hairline flex items-center justify-center mb-4 md:mb-5 group-hover:border-gold group-hover:rotate-12 transition-all duration-500">
+                    <ImageIcon size={18} strokeWidth={1.2} className="gold" />
                   </div>
-                  <h3 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>{t('hero.ourCollectionCard')}</h3>
-                  <p className="text-sm leading-relaxed mb-5" style={{ color: '#4A3F2E' }}>
+                  <h3 className="serif text-xl md:text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>{t('hero.ourCollectionCard')}</h3>
+                  <p className="text-xs md:text-sm leading-relaxed mb-4 md:mb-5" style={{ color: '#4A3F2E' }}>
                     {t('hero.ourCollectionDesc')}
                   </p>
-                  <div className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase gold group-hover:gap-3 transition-all duration-300">
+                  <div className="flex items-center gap-2 text-[10px] md:text-xs tracking-[0.2em] uppercase gold group-hover:gap-3 transition-all duration-300">
                     {t('hero.viewCollection')} <ChevronRight size={14} />
                   </div>
                 </div>
@@ -2614,17 +2665,17 @@ export default function App() {
               <button
                 onClick={() => setShowStyleQuiz(true)}
                 onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`); e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`); }}
-                className="card-hover rounded-card bg-white border hairline p-8 text-left group"
+                className="card-hover rounded-card bg-white border hairline p-5 md:p-8 text-left group"
               >
                 <div className="relative z-10">
-                  <div className="w-12 h-12 rounded-full border hairline flex items-center justify-center mb-5 group-hover:border-gold group-hover:rotate-12 transition-all duration-500">
-                    <SparklesIcon size={20} strokeWidth={1.2} className="gold" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border hairline flex items-center justify-center mb-4 md:mb-5 group-hover:border-gold group-hover:rotate-12 transition-all duration-500">
+                    <SparklesIcon size={18} strokeWidth={1.2} className="gold" />
                   </div>
-                  <h3 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>{t('hero.whichStyle')}</h3>
-                  <p className="text-sm leading-relaxed mb-5" style={{ color: '#4A3F2E' }}>
+                  <h3 className="serif text-xl md:text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>{t('hero.whichStyle')}</h3>
+                  <p className="text-xs md:text-sm leading-relaxed mb-4 md:mb-5" style={{ color: '#4A3F2E' }}>
                     {t('hero.quizDesc')}
                   </p>
-                  <div className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase gold group-hover:gap-3 transition-all duration-300">
+                  <div className="flex items-center gap-2 text-[10px] md:text-xs tracking-[0.2em] uppercase gold group-hover:gap-3 transition-all duration-300">
                     {t('hero.startQuiz')} <ChevronRight size={14} />
                   </div>
                 </div>
@@ -2632,22 +2683,30 @@ export default function App() {
             </div>
           </section>
 
-          <section className="max-w-4xl mx-auto px-6 pb-24">
-            <div className="border hairline rounded-card p-10 md:p-14 text-center relative overflow-hidden bg-white">
+          <section className="max-w-4xl mx-auto px-4 md:px-6 pb-16 md:pb-24">
+            <div className="border hairline rounded-card p-6 md:p-10 lg:p-14 text-center relative overflow-hidden bg-white">
               <div className="shimmer absolute inset-0 pointer-events-none" />
               <div className="relative">
-                <Heart size={20} strokeWidth={1} className="gold mx-auto mb-5" />
-                <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">{t('hero.salonTag')}</p>
-                <h3 className="serif text-3xl md:text-4xl font-normal mb-5 italic" style={{ color: '#1E1910' }}>{t('hero.motto')}</h3>
-                <p className="text-sm leading-relaxed max-w-lg mx-auto mb-8" style={{ color: '#4A3F2E' }}>{t('hero.mottoSub')}</p>
+                <Heart size={20} strokeWidth={1} className="gold mx-auto mb-4 md:mb-5" />
+                <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3 md:mb-4">{t('hero.salonTag')}</p>
+                <h3 className="serif text-2xl md:text-3xl lg:text-4xl font-normal mb-4 md:mb-5 italic" style={{ color: '#1E1910' }}>{t('hero.motto')}</h3>
+                <p className="text-xs md:text-sm leading-relaxed max-w-lg mx-auto mb-6 md:mb-8" style={{ color: '#4A3F2E' }}>{t('hero.mottoSub')}</p>
                 <a href="https://www.janveil.sk/skuska-svadobnych-siat/#termin" target="_blank" rel="noopener noreferrer"
-                  className="inline-block border border-gold gold px-8 py-3 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition-all duration-500">{t('hero.bookFitting')}</a>
+                  className="inline-block border border-gold gold px-6 md:px-8 py-2.5 md:py-3 rounded-full text-[10px] md:text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition-all duration-500">{t('hero.bookFitting')}</a>
               </div>
             </div>
           </section>
 
-          <footer className="border-t hairline py-8 text-center text-xs tracking-wider" style={{ color: '#6B5946' }}>
-            JanVeil · Hviezdoslavova 41, Zlaté Moravce · janveil.sk
+          <footer className="border-t hairline py-8 md:py-10 px-4 text-center">
+            <a
+              href="https://www.janveil.com"
+              className="inline-flex items-center gap-2 text-[11px] md:text-xs tracking-[0.25em] uppercase gold border border-gold rounded-full px-6 py-3 hover:bg-gold hover:text-white transition-all duration-500 mb-5"
+            >
+              <ChevronLeft size={14} /> {lang === 'en' ? 'Back to janveil.com' : 'Späť na janveil.com'}
+            </a>
+            <div className="text-[10px] md:text-xs tracking-wider" style={{ color: '#6B5946' }}>
+              JanVeil · Hviezdoslavova 41, Zlaté Moravce · janveil.sk
+            </div>
           </footer>
         </div>
       )}
@@ -2655,12 +2714,12 @@ export default function App() {
       {activeModule === 'checklist' && (
         <ModuleShell title={t('nav.checklist')} subtitle={t('checklist.subtitle')} lang={lang} onBack={() => setActiveModule('home')}>
           {/* MAIN PROGRESS with percentage */}
-          <div className="mb-10 bg-white border hairline rounded-card p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mb-8 md:mb-10 bg-white border hairline rounded-card p-5 md:p-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
               <span className="text-xs tracking-wider uppercase gold">{t("checklist.completed")}</span>
               <div className="flex items-baseline gap-3">
-                <span className="serif text-4xl font-normal gold">{completedPct}%</span>
-                <span className="text-sm" style={{ color: '#6B5946' }}>{completedTasks} / {checklist.length}</span>
+                <span className="serif text-3xl md:text-4xl font-normal gold">{completedPct}%</span>
+                <span className="text-xs md:text-sm" style={{ color: '#6B5946' }}>{completedTasks} / {checklist.length}</span>
               </div>
             </div>
             <div className="h-2 bg-gray-100 relative overflow-hidden rounded-full">
@@ -2679,43 +2738,43 @@ export default function App() {
 
               return (
                 <div key={phase} className={`bg-white border rounded-card transition-all duration-300 ${isOpen ? 'border-gold shadow-lg' : isComplete ? 'border-gold/50' : 'hairline hover:border-gold'}`}>
-                  <button onClick={() => setOpenPhase(isOpen ? null : phase)} className="w-full px-6 py-5 flex items-center justify-between text-left group">
-                    <div className="flex items-center gap-5 flex-1 min-w-0">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 relative ${isOpen || isComplete ? 'bg-gold' : 'border hairline group-hover:border-gold'}`}>
+                  <button onClick={() => setOpenPhase(isOpen ? null : phase)} className="w-full px-4 md:px-6 py-4 md:py-5 flex items-center justify-between text-left group gap-3">
+                    <div className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
+                      <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 relative ${isOpen || isComplete ? 'bg-gold' : 'border hairline group-hover:border-gold'}`}>
                         {isComplete ? (
                           <Check size={18} className="text-white" strokeWidth={2.5} />
                         ) : (
-                          <span className={`serif text-sm font-medium ${isOpen ? 'text-white' : 'gold'}`}>{pct}%</span>
+                          <span className={`serif text-xs md:text-sm font-medium ${isOpen ? 'text-white' : 'gold'}`}>{pct}%</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="serif text-xl font-normal mb-1.5" style={{ color: '#1E1910' }}>{phase}</h3>
-                        <div className="flex items-center gap-3">
+                        <h3 className="serif text-base md:text-xl font-normal mb-1 md:mb-1.5 truncate" style={{ color: '#1E1910' }}>{phase}</h3>
+                        <div className="flex items-center gap-2 md:gap-3">
                           <div className="flex-1 max-w-[240px] h-1 bg-gray-100 rounded-full overflow-hidden">
                             <div className="progress-bar h-full bg-gold rounded-full" style={{ width: `${pct}%` }} />
                           </div>
-                          <span className="text-xs" style={{ color: '#6B5946' }}>{done} / {items.length}</span>
+                          <span className="text-[10px] md:text-xs whitespace-nowrap" style={{ color: '#6B5946' }}>{done} / {items.length}</span>
                         </div>
                       </div>
                     </div>
-                    <ChevronDown size={18} className={`gold transition-transform duration-300 flex-shrink-0 ml-4 ${isOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={18} className={`gold transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {isOpen && (
-                    <div className="px-6 pb-6 border-t hairline pt-4 fade-in">
+                    <div className="px-4 md:px-6 pb-5 md:pb-6 border-t hairline pt-4 fade-in">
                       {/* DRESS COLLECTION TEASER — zobrazí sa v fáze keď sa vyberajú šaty */}
                       {(phase === '9-12 mesiacov pred' || phase === '9-12 months before' || phase === '6-9 mesiacov pred' || phase === '6-9 months before') && (
                         <div className="mb-5 rounded-card overflow-hidden border border-gold" style={{ background: 'linear-gradient(135deg, #F5EFE3, #EBE1CF)' }}>
-                          <div className="p-5 md:p-6">
+                          <div className="p-4 md:p-6">
                             <div className="flex items-start gap-4 flex-wrap">
-                              <div className="flex-1 min-w-[240px]">
+                              <div className="flex-1 min-w-[180px]">
                                 <p className="text-[10px] tracking-[0.3em] uppercase gold mb-2 flex items-center gap-2">
                                   <Heart size={11} strokeWidth={1.5} /> {lang === "en" ? "From JanVeil salon" : "Od salónu JanVeil"}
                                 </p>
-                                <h4 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>
+                                <h4 className="serif text-xl md:text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>
                                   {(phase === '9-12 mesiacov pred' || phase === '9-12 months before') ? (lang === 'en' ? 'Time to choose a wedding dress' : 'Čas vybrať svadobné šaty') : (lang === 'en' ? 'Not decided yet?' : 'Ešte nie ste rozhodnutá?')}
                                 </h4>
-                                <p className="text-sm leading-relaxed mb-4" style={{ color: '#4A3F2E' }}>
+                                <p className="text-xs md:text-sm leading-relaxed mb-4" style={{ color: '#4A3F2E' }}>
                                   {(phase === '9-12 mesiacov pred' || phase === '9-12 months before')
                                     ? (lang === 'en' ? 'Most brides reserve dresses during this period. Browse our collection — each piece is hand-sewn and you can try it on in person.' : 'V tomto období väčšina neviest rezervuje šaty. Pozrite si našu kolekciu — každý kúsok je ručne šitý a môžete si ho vyskúšať osobne.')
                                     : (lang === 'en' ? 'If you have not chosen a dress yet, it is not too late. Browse our collection or book a no-commitment fitting.' : 'Ak ste ešte nevybrali šaty, nie je neskoro. Pozrite si našu kolekciu alebo si objednajte nezáväznú skúšku.')}
@@ -2725,7 +2784,7 @@ export default function App() {
                                     href="https://www.janveil.sk/svadobne-saty/"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 bg-gold text-white px-5 py-2.5 rounded-full text-[10px] tracking-[0.2em] uppercase hover:opacity-90 transition"
+                                    className="inline-flex items-center gap-2 bg-gold text-white px-4 md:px-5 py-2 md:py-2.5 rounded-full text-[10px] tracking-[0.2em] uppercase hover:opacity-90 transition"
                                   >
                                     <ImageIcon size={12} /> {lang === "en" ? "Our collection" : "Naša kolekcia"}
                                   </a>
@@ -2733,7 +2792,7 @@ export default function App() {
                                     href="https://www.janveil.sk/skuska-svadobnych-siat/#termin"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 border border-gold gold px-5 py-2.5 rounded-full text-[10px] tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition"
+                                    className="inline-flex items-center gap-2 border border-gold gold px-4 md:px-5 py-2 md:py-2.5 rounded-full text-[10px] tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition"
                                   >
                                     {lang === "en" ? "Book fitting" : "Objednať skúšku"}
                                   </a>
@@ -2818,14 +2877,14 @@ export default function App() {
             })}
           </div>
 
-          <div className="bg-white border hairline rounded-card p-6 mt-8">
+          <div className="bg-white border hairline rounded-card p-5 md:p-6 mt-6 md:mt-8">
             <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">{lang === "en" ? "Add custom task" : "Pridať vlastnú úlohu"}</p>
-            <div className="grid md:grid-cols-[1fr,220px,auto] gap-4 items-end">
+            <div className="grid md:grid-cols-[1fr,220px,auto] gap-3 md:gap-4 items-end">
               <input type="text" value={newTask.task} onChange={(e) => setNewTask({ ...newTask, task: e.target.value })}
-                placeholder={lang === "en" ? "e.g.: Book hotel for parents" : "Napríklad: Rezervovať hotel pre rodičov"} className="border-b hairline py-2 bg-transparent"
+                placeholder={lang === "en" ? "e.g.: Book hotel for parents" : "Napríklad: Rezervovať hotel pre rodičov"} className="w-full border-b hairline py-2 bg-transparent text-sm md:text-base"
                 onKeyPress={(e) => e.key === 'Enter' && addTask()} />
               <ElegantSelect value={newTask.phase} onChange={(v) => setNewTask({ ...newTask, phase: v })} options={phases.map(p => ({ value: p, label: p }))} />
-              <button onClick={addTask} className="border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2">
+              <button onClick={addTask} className="border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2 justify-center">
                 <Plus size={14} /> {t('actions.add')}
               </button>
             </div>
@@ -3036,7 +3095,7 @@ export default function App() {
           </div>
 
           {guests.some(g => (g.rsvp === 'Potvrdená' || g.rsvp === 'Confirmed')) && (
-            <div className="bg-white border hairline rounded-card p-6 mb-6">
+            <div className="bg-white border hairline rounded-card p-5 md:p-6 mb-5 md:mb-6">
               <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4 flex items-center gap-2"><UtensilsCrossed size={12} /> {t("guests.forCatering")}</p>
               <div className="grid grid-cols-3 gap-4">
                 <div><div className="serif text-3xl font-normal" style={{ color: '#1E1910' }}>{(mealCounts['Celá porcia'] || mealCounts['Full portion'] || 0)}</div><div className="text-xs mt-1" style={{ color: '#4A3F2E' }}>{t("guests.fullPortion")}</div></div>
@@ -3046,9 +3105,9 @@ export default function App() {
             </div>
           )}
 
-          <div className="bg-white border hairline rounded-card p-6 mb-6">
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-5">{t("guests.addGuest")}</p>
-            <div className="grid md:grid-cols-2 gap-5 mb-5">
+          <div className="bg-white border hairline rounded-card p-5 md:p-6 mb-5 md:mb-6">
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4 md:mb-5">{t("guests.addGuest")}</p>
+            <div className="grid sm:grid-cols-2 gap-4 md:gap-5 mb-4 md:mb-5">
               <div>
                 <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Name" : "Meno"}</label>
                 <input type="text" value={newGuest.name} onChange={e => setNewGuest({ ...newGuest, name: e.target.value })} placeholder={lang === "en" ? "e.g. Anna Smith" : "Napr. Anna Nováková"} className="w-full border-b hairline py-2 bg-transparent" onKeyPress={e => e.key === 'Enter' && addGuest()} />
@@ -3058,14 +3117,14 @@ export default function App() {
                 <ElegantSelect value={newGuest.side} onChange={v => setNewGuest({ ...newGuest, side: v })} options={[{ value: lang === 'en' ? 'Bride' : 'Nevesta', label: lang === 'en' ? 'Bride' : 'Nevesta' }, { value: lang === 'en' ? 'Groom' : 'Ženích', label: lang === 'en' ? 'Groom' : 'Ženích' }, { value: lang === 'en' ? 'Joint' : 'Spoloční', label: lang === 'en' ? 'Joint' : 'Spoloční' }]} />
               </div>
             </div>
-            <div className="mb-5">
+            <div className="mb-4 md:mb-5">
               <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Type" : "Typ"}</label>
               <div className="pill-group">
                 <button className={`pill-btn ${(newGuest.type === 'Dospelý' || newGuest.type === 'Adult') ? 'active' : ''}`} onClick={() => setNewGuest({ ...newGuest, type: lang === 'en' ? 'Adult' : 'Dospelý' })}><User size={12} style={{ marginRight: 6 }} />{t("guests.adult")}</button>
                 <button className={`pill-btn ${(newGuest.type === 'Dieťa' || newGuest.type === 'Child') ? 'active' : ''}`} onClick={() => setNewGuest({ ...newGuest, type: lang === 'en' ? 'Child' : 'Dieťa' })}><Baby size={12} style={{ marginRight: 6 }} />{t("guests.child")}</button>
               </div>
             </div>
-            <div className="mb-5">
+            <div className="mb-4 md:mb-5">
               <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Meal portion" : "Porcia jedla"}</label>
               <div className="pill-group">
                 {[
@@ -3079,16 +3138,16 @@ export default function App() {
               </div>
             </div>
             {(newGuest.type === 'Dieťa' || newGuest.type === 'Child') && (
-              <div className="mb-5 fade-in">
+              <div className="mb-4 md:mb-5 fade-in">
                 <label className="flex items-center gap-3 cursor-pointer select-none">
-                  <div onClick={() => setNewGuest({ ...newGuest, highChair: !newGuest.highChair })} className={`w-5 h-5 border rounded flex items-center justify-center transition ${newGuest.highChair ? 'bg-gold border-gold' : 'hairline'}`}>
+                  <div onClick={() => setNewGuest({ ...newGuest, highChair: !newGuest.highChair })} className={`w-5 h-5 border rounded flex items-center justify-center transition flex-shrink-0 ${newGuest.highChair ? 'bg-gold border-gold' : 'hairline'}`}>
                     {newGuest.highChair && <Check size={12} className="text-white" strokeWidth={2.5} />}
                   </div>
-                  <span className="text-sm" style={{ color: '#1E1910' }}>{lang === "en" ? "Needs a high chair" : "Potrebuje detskú stoličku (high chair)"}</span>
+                  <span className="text-xs md:text-sm" style={{ color: '#1E1910' }}>{lang === "en" ? "Needs a high chair" : "Potrebuje detskú stoličku (high chair)"}</span>
                 </label>
               </div>
             )}
-            <div className="mb-5">
+            <div className="mb-4 md:mb-5">
               <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Attendance" : "Účasť"}</label>
               <div className="pill-group">
                 {[
@@ -3101,19 +3160,19 @@ export default function App() {
                 })}
               </div>
             </div>
-            <div className="mb-5">
+            <div className="mb-4 md:mb-5">
               <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block flex items-center gap-1.5"><AlertCircle size={12} />{lang === "en" ? "Allergens and intolerances" : "Alergény a intolerancie"}</label>
               <input type="text" value={newGuest.allergies} onChange={e => setNewGuest({ ...newGuest, allergies: e.target.value })} placeholder={lang === "en" ? "e.g. gluten, lactose, nuts..." : "Napr. lepok, laktóza, orechy..."} className="w-full border-b hairline py-2 bg-transparent" />
             </div>
-            <button onClick={addGuest} className="border border-gold gold px-6 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition flex items-center gap-2"><Plus size={14} /> {t('guests.addGuest')}</button>
+            <button onClick={addGuest} className="w-full sm:w-auto border border-gold gold px-6 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition flex items-center gap-2 justify-center"><Plus size={14} /> {t('guests.addGuest')}</button>
           </div>
 
           {/* BULK ADD — celá rodina naraz */}
-          <details className="bg-white border hairline rounded-card p-6 mb-6">
+          <details className="bg-white border hairline rounded-card p-5 md:p-6 mb-5 md:mb-6">
             <summary className="text-[10px] tracking-[0.3em] uppercase gold cursor-pointer hover:opacity-70 select-none">
               {t("guests.addFamily")}
             </summary>
-            <div className="mt-5 grid md:grid-cols-[1fr,120px,auto] gap-4 items-end">
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-[1fr,110px,auto] gap-3 md:gap-4 items-end">
               <div>
                 <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{t("guests.familyName")}</label>
                 <input type="text" value={bulkFamilyName} onChange={e => setBulkFamilyName(e.target.value)} placeholder={lang === "en" ? "e.g. The Smiths" : "napr. Novákovci"} className="w-full border-b hairline py-2 bg-transparent" />
@@ -3122,7 +3181,7 @@ export default function App() {
                 <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{t("guests.familyCount")}</label>
                 <input type="number" min="2" max="12" value={bulkFamilyCount} onChange={e => setBulkFamilyCount(Number(e.target.value))} className="w-full border-b hairline py-2 bg-transparent" />
               </div>
-              <button onClick={addFamilyGuests} className="border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2">
+              <button onClick={addFamilyGuests} className="border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2 justify-center">
                 <Plus size={14} /> {t("guests.addFamilyBtn")}
               </button>
             </div>
@@ -3260,13 +3319,13 @@ export default function App() {
           )}
 
           {editingGuest && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" style={{ backgroundColor: 'rgba(44, 36, 22, 0.4)', backdropFilter: 'blur(4px)' }} onClick={() => setEditingGuest(null)}>
-              <div className="bg-white rounded-card max-w-lg w-full p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="serif text-2xl font-normal" style={{ color: '#1E1910' }}>{lang === "en" ? "Edit guest" : "Upraviť hosťa"}</h3>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4 modal-backdrop" style={{ backgroundColor: 'rgba(44, 36, 22, 0.4)', backdropFilter: 'blur(4px)' }} onClick={() => setEditingGuest(null)}>
+              <div className="bg-white rounded-card max-w-lg w-full p-5 md:p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-5 md:mb-6">
+                  <h3 className="serif text-xl md:text-2xl font-normal" style={{ color: '#1E1910' }}>{lang === "en" ? "Edit guest" : "Upraviť hosťa"}</h3>
                   <button onClick={() => setEditingGuest(null)} className="gold hover:opacity-60"><X size={20} /></button>
                 </div>
-                <div className="space-y-5">
+                <div className="space-y-4 md:space-y-5">
                   <div><label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Name" : "Meno"}</label><input type="text" value={editingGuest.name} onChange={e => setEditingGuest({ ...editingGuest, name: e.target.value })} className="w-full border-b hairline py-2 bg-transparent" /></div>
                   <div><label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{t("guests.side")}</label><ElegantSelect value={editingGuest.side} onChange={v => setEditingGuest({ ...editingGuest, side: v })} options={[{ value: lang === 'en' ? 'Bride' : 'Nevesta', label: lang === 'en' ? 'Bride' : 'Nevesta' }, { value: lang === 'en' ? 'Groom' : 'Ženích', label: lang === 'en' ? 'Groom' : 'Ženích' }, { value: lang === 'en' ? 'Joint' : 'Spoloční', label: lang === 'en' ? 'Joint' : 'Spoloční' }]} /></div>
                   <div>
@@ -3436,12 +3495,12 @@ export default function App() {
       {/* ============ DOCUMENTS — Doklady a papierovanie ============ */}
       {activeModule === 'documents' && (
         <ModuleShell title={t('nav.documents')} subtitle={t('documents.subtitle')} lang={lang} onBack={() => setActiveModule('home')}>
-          <div className="mb-10 bg-white border hairline rounded-card p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mb-8 md:mb-10 bg-white border hairline rounded-card p-5 md:p-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
               <span className="text-xs tracking-wider uppercase gold">{t('documents.handled')}</span>
               <div className="flex items-baseline gap-3">
-                <span className="serif text-4xl font-normal gold">{documents.length ? Math.round((documentsDone / documents.length) * 100) : 0}%</span>
-                <span className="text-sm" style={{ color: '#6B5946' }}>{documentsDone} / {documents.length}</span>
+                <span className="serif text-3xl md:text-4xl font-normal gold">{documents.length ? Math.round((documentsDone / documents.length) * 100) : 0}%</span>
+                <span className="text-xs md:text-sm" style={{ color: '#6B5946' }}>{documentsDone} / {documents.length}</span>
               </div>
             </div>
             <div className="h-2 bg-gray-100 relative overflow-hidden rounded-full">
@@ -3449,36 +3508,36 @@ export default function App() {
             </div>
           </div>
 
-          <div className="bg-white border hairline rounded-card p-2 mb-6">
+          <div className="bg-white border hairline rounded-card p-2 mb-5 md:mb-6">
             <ul className="divide-y hairline">
               {documents.map(d => (
-                <li key={d.id} className="flex items-center gap-4 py-3 px-4 group rounded hover:bg-[#F5EFE3] transition">
+                <li key={d.id} className="flex items-center gap-3 md:gap-4 py-3 px-3 md:px-4 group rounded hover:bg-[#F5EFE3] transition">
                   <button onClick={() => toggleDocument(d.id)}
                     className={`w-5 h-5 border flex-shrink-0 flex items-center justify-center rounded transition-all duration-300 ${d.done ? 'bg-gold border-gold' : 'hairline hover:border-gold'}`}>
                     {d.done && <Check size={12} className="text-white" strokeWidth={2.5} />}
                   </button>
-                  <span className={`flex-1 text-sm transition ${d.done ? 'line-through opacity-40' : ''}`} style={{ color: '#1E1910' }}>{d.task}</span>
+                  <span className={`flex-1 text-xs md:text-sm transition ${d.done ? 'line-through opacity-40' : ''}`} style={{ color: '#1E1910' }}>{d.task}</span>
                   <button onClick={() => removeDocument(d.id)} className="opacity-0 group-hover:opacity-100 transition gold hover:text-red-600"><Trash2 size={13} /></button>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="bg-white border hairline rounded-card p-6">
-            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">{t('documents.addCustom')}</p>
+          <div className="bg-white border hairline rounded-card p-5 md:p-6">
+            <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3 md:mb-4">{t('documents.addCustom')}</p>
             <div className="grid grid-cols-[1fr,auto] gap-3 items-end">
-              <input type="text" value={newDocument} onChange={e => setNewDocument(e.target.value)} placeholder={lang === "en" ? "e.g. Certified translation of birth certificate" : "Napr. Overený preklad rodného listu"} className="border-b hairline py-2 bg-transparent" onKeyPress={e => e.key === 'Enter' && addDocument()} />
-              <button onClick={addDocument} className="border border-gold gold px-5 py-2.5 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2">
+              <input type="text" value={newDocument} onChange={e => setNewDocument(e.target.value)} placeholder={lang === "en" ? "e.g. Certified translation of birth certificate" : "Napr. Overený preklad rodného listu"} className="border-b hairline py-2 bg-transparent text-sm" onKeyPress={e => e.key === 'Enter' && addDocument()} />
+              <button onClick={addDocument} className="border border-gold gold px-4 md:px-5 py-2.5 rounded-full text-xs tracking-wider uppercase hover:bg-gold hover:text-white transition flex items-center gap-2">
                 <Plus size={14} /> {t('actions.add')}
               </button>
             </div>
           </div>
 
-          <div className="mt-8 bg-gradient-to-br from-[#F5EFE3] to-[#EBE1CF] border hairline rounded-card p-6">
+          <div className="mt-6 md:mt-8 bg-gradient-to-br from-[#F5EFE3] to-[#EBE1CF] border hairline rounded-card p-5 md:p-6">
             <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">
               {lang === 'en' ? 'Where to go and when?' : 'Kam ísť a kedy?'}
             </p>
-            <ul className="text-sm space-y-2" style={{ color: '#1E1910' }}>
+            <ul className="text-xs md:text-sm space-y-2" style={{ color: '#1E1910' }}>
               {lang === 'en' ? (
                 <>
                   <li>• <strong>Registry office</strong> — at least 7 days before the wedding (ideally 1-3 months)</li>
@@ -3499,16 +3558,15 @@ export default function App() {
         </ModuleShell>
       )}
 
-      {/* ============ FAQ — Najčastejšie otázky ============ */}
       {activeModule === 'faq' && (
         <ModuleShell title={t('nav.faq')} subtitle={t('faq.subtitle')} lang={lang} onBack={() => setActiveModule('home')}>
           {/* Intro */}
-          <div className="mb-10 bg-gradient-to-br from-[#F5EFE3] to-[#EBE1CF] border hairline rounded-card p-6 md:p-8">
+          <div className="mb-8 md:mb-10 bg-gradient-to-br from-[#F5EFE3] to-[#EBE1CF] border hairline rounded-card p-5 md:p-8">
             <Heart size={20} strokeWidth={1.2} className="gold mb-3" />
-            <h3 className="serif text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>
+            <h3 className="serif text-xl md:text-2xl font-normal mb-2" style={{ color: '#1E1910' }}>
               <em>{t("faq.haveQuestion")}</em>
             </h3>
-            <p className="text-sm leading-relaxed" style={{ color: '#4A3F2E' }}>
+            <p className="text-xs md:text-sm leading-relaxed" style={{ color: '#4A3F2E' }}>
               {lang === 'en' ? 'If you do not find your question, call us at ' : 'Ak vašu otázku nenájdete, zavolajte nám na '}
               <a href="tel:+421944943390" className="gold hover:opacity-70 underline">+421 944 943 390</a>
               {lang === 'en' ? ' or email ' : ' alebo napíšte na '}
@@ -3518,12 +3576,12 @@ export default function App() {
           </div>
 
           {/* FAQ sekcie */}
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             {faqCategories.map((category, catIdx) => (
               <div key={catIdx}>
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-3 md:mb-4">
                   <div className="h-px w-8 bg-gold" />
-                  <h2 className="serif text-xl font-normal tracking-wide" style={{ color: '#1E1910' }}>
+                  <h2 className="serif text-lg md:text-xl font-normal tracking-wide" style={{ color: '#1E1910' }}>
                     {category.title}
                   </h2>
                 </div>
@@ -3536,9 +3594,9 @@ export default function App() {
                       <div key={key} className={`bg-white border rounded-soft overflow-hidden transition-all duration-300 ${isOpen ? 'border-gold shadow-md' : 'hairline'}`}>
                         <button
                           onClick={() => setOpenFaq(isOpen ? null : key)}
-                          className="w-full flex items-start justify-between gap-4 p-5 text-left hover:bg-[#F5EFE3] transition-colors"
+                          className="w-full flex items-start justify-between gap-3 md:gap-4 p-4 md:p-5 text-left hover:bg-[#F5EFE3] transition-colors"
                         >
-                          <span className="serif text-lg font-normal flex-1" style={{ color: '#1E1910' }}>
+                          <span className="serif text-base md:text-lg font-normal flex-1" style={{ color: '#1E1910' }}>
                             {item.q}
                           </span>
                           <ChevronDown
@@ -3547,9 +3605,9 @@ export default function App() {
                           />
                         </button>
                         {isOpen && (
-                          <div className="px-5 pb-5 pt-0 fade-in">
-                            <div className="border-t hairline pt-4">
-                              <p className="text-sm leading-relaxed" style={{ color: '#4A3F2E' }}>
+                          <div className="px-4 md:px-5 pb-4 md:pb-5 pt-0 fade-in">
+                            <div className="border-t hairline pt-3 md:pt-4">
+                              <p className="text-xs md:text-sm leading-relaxed" style={{ color: '#4A3F2E' }}>
                                 {item.a}
                               </p>
                             </div>
@@ -3602,24 +3660,24 @@ export default function App() {
       {/* ============ DIARY — Môj denník ============ */}
       {activeModule === 'diary' && (
         <ModuleShell title={t('nav.diary')} subtitle={t('diary.subtitle')} lang={lang} onBack={() => setActiveModule('home')}>
-          <div className="bg-white border hairline rounded-card p-8">
-            <div className="flex items-start justify-between mb-4">
-              <div>
+          <div className="bg-white border hairline rounded-card p-5 md:p-8">
+            <div className="flex items-start justify-between mb-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="text-[10px] tracking-[0.3em] uppercase gold mb-2">{t('diary.forYourEyes')}</p>
-                <p className="serif italic text-base" style={{ color: '#6B5946' }}>
+                <p className="serif italic text-sm md:text-base" style={{ color: '#6B5946' }}>
                   {t('diary.writeAnything')}
                 </p>
               </div>
-              <MessageCircle size={24} strokeWidth={1.2} className="gold opacity-40" />
+              <MessageCircle size={24} strokeWidth={1.2} className="gold opacity-40 flex-shrink-0" />
             </div>
             <textarea
               value={diary}
               onChange={(e) => setDiary(e.target.value)}
               placeholder={lang === "en" ? "Today I saw a dress I love..." : "Dnes som videla šaty ktoré sa mi páčia..."}
-              className="w-full min-h-[500px] bg-transparent border-0 text-base leading-relaxed resize-y serif italic"
+              className="w-full min-h-[400px] md:min-h-[500px] bg-transparent border-0 text-sm md:text-base leading-relaxed resize-y serif italic"
               style={{ color: '#1E1910', fontFamily: "'Cormorant Garamond', Georgia, serif" }}
             />
-            <div className="pt-4 border-t hairline flex items-center justify-between text-xs" style={{ color: '#6B5946' }}>
+            <div className="pt-4 border-t hairline flex items-center justify-between text-[10px] md:text-xs gap-2 flex-wrap" style={{ color: '#6B5946' }}>
               <span>{diary.length} {t('diary.characters')}</span>
               <span>{t('diary.autoSaved')}</span>
             </div>
@@ -3630,7 +3688,7 @@ export default function App() {
       {/* EXPORT MODAL */}
       {showExport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" style={{ backgroundColor: 'rgba(44, 36, 22, 0.4)', backdropFilter: 'blur(4px)' }} onClick={() => setShowExport(false)}>
-          <div className="bg-white rounded-card max-w-2xl w-full p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-card max-w-2xl w-full p-5 md:p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="serif text-2xl font-normal mb-1" style={{ color: '#1E1910' }}>{lang === "en" ? "Export planner" : "Exportovať plánovač"}</h3>
@@ -3643,7 +3701,7 @@ export default function App() {
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               <button
                 onClick={() => { exportToPDF(); setShowExport(false); }}
-                className="group text-left bg-white border-2 border-gold rounded-card p-6 hover:bg-[#F5EFE3] transition-all duration-300 hover:shadow-lg"
+                className="group text-left bg-white border-2 border-gold rounded-card p-5 md:p-6 hover:bg-[#F5EFE3] transition-all duration-300 hover:shadow-lg"
               >
                 <div className="w-12 h-12 rounded-full bg-gold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <FileText size={20} className="text-white" strokeWidth={1.5} />
@@ -3659,7 +3717,7 @@ export default function App() {
 
               <button
                 onClick={() => { exportToExcel(); setShowExport(false); }}
-                className="group text-left bg-white border hairline rounded-card p-6 hover:border-gold hover:bg-[#F5EFE3] transition-all duration-300 hover:shadow-lg"
+                className="group text-left bg-white border hairline rounded-card p-5 md:p-6 hover:border-gold hover:bg-[#F5EFE3] transition-all duration-300 hover:shadow-lg"
               >
                 <div className="w-12 h-12 rounded-full border border-gold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <FileSpreadsheet size={20} className="gold" strokeWidth={1.5} />
@@ -3706,7 +3764,7 @@ export default function App() {
       {/* IMPORT MODAL */}
       {showImport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" style={{ backgroundColor: 'rgba(44, 36, 22, 0.4)', backdropFilter: 'blur(4px)' }} onClick={() => { setShowImport(false); setImportText(''); }}>
-          <div className="bg-white rounded-card max-w-2xl w-full p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-card max-w-2xl w-full p-5 md:p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="serif text-2xl font-normal mb-1" style={{ color: '#1E1910' }}>{lang === "en" ? "Import data" : "Načítať dáta"}</h3>
@@ -3748,7 +3806,7 @@ export default function App() {
       {/* ============ SHARE LINK MODAL ============ */}
       {showShareLink && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" style={{ backgroundColor: 'rgba(44, 36, 22, 0.4)', backdropFilter: 'blur(4px)' }} onClick={() => setShowShareLink(false)}>
-          <div className="bg-white rounded-card max-w-xl w-full p-8 modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-card max-w-xl w-full p-5 md:p-8 modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="serif text-2xl font-normal mb-1" style={{ color: '#1E1910' }}>{lang === "en" ? "Share planner" : "Zdieľať plánovač"}</h3>
@@ -3805,29 +3863,29 @@ export default function App() {
 
       {/* ============ TEMPLATES MODAL ============ */}
       {showTemplates && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" style={{ backgroundColor: 'rgba(30, 25, 16, 0.5)', backdropFilter: 'blur(6px)' }} onClick={() => setShowTemplates(false)}>
-          <div className="bg-white rounded-card max-w-4xl w-full p-6 md:p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4 modal-backdrop" style={{ backgroundColor: 'rgba(30, 25, 16, 0.5)', backdropFilter: 'blur(6px)' }} onClick={() => setShowTemplates(false)}>
+          <div className="bg-white rounded-card max-w-4xl w-full p-5 md:p-8 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5 md:mb-6">
               <div>
                 <p className="text-[10px] tracking-[0.3em] uppercase gold mb-2">{t('templates.title')}</p>
-                <h3 className="serif text-3xl font-normal" style={{ color: '#1E1910' }}>
+                <h3 className="serif text-xl md:text-3xl font-normal" style={{ color: '#1E1910' }}>
                   <em>{t('templates.subtitle')}</em>
                 </h3>
               </div>
               <button onClick={() => setShowTemplates(false)} className="gold hover:opacity-60"><X size={22} /></button>
             </div>
 
-            <p className="text-sm mb-6" style={{ color: '#4A3F2E' }}>
+            <p className="text-xs md:text-sm mb-5 md:mb-6" style={{ color: '#4A3F2E' }}>
               {lang === 'en'
                 ? 'Choose a template that matches your vision. It will set up budget categories and estimated costs. You can adjust everything later.'
                 : 'Vyberte si šablónu ktorá vám je blízka. Predvyplní rozpočet a odhadované sumy. Všetko môžete neskôr upraviť.'}
             </p>
 
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-3 gap-3 md:gap-4">
               {weddingTemplates.map(tpl => (
-                <div key={tpl.id} className="border hairline rounded-card p-6 hover:border-gold hover:shadow-md transition-all duration-300 flex flex-col">
-                  <div className="text-4xl mb-3">{tpl.icon}</div>
-                  <h4 className="serif text-xl font-normal mb-2" style={{ color: '#1E1910' }}>{tpl.name}</h4>
+                <div key={tpl.id} className="border hairline rounded-card p-5 md:p-6 hover:border-gold hover:shadow-md transition-all duration-300 flex flex-col">
+                  <div className="text-3xl md:text-4xl mb-3">{tpl.icon}</div>
+                  <h4 className="serif text-lg md:text-xl font-normal mb-2" style={{ color: '#1E1910' }}>{tpl.name}</h4>
                   <p className="text-xs mb-4" style={{ color: '#6B5946' }}>{tpl.desc}</p>
                   <div className="flex-1 space-y-1 mb-4">
                     {tpl.expenses.map(e => (
@@ -4060,30 +4118,30 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
 
   return (
     <>
-      <div className="bg-white border hairline rounded-card p-6 mb-6">
-        <p className="text-[10px] tracking-[0.3em] uppercase gold mb-5">{t("seating.addTable")}</p>
-        <div className="grid md:grid-cols-2 gap-5 mb-5">
+      <div className="bg-white border hairline rounded-card p-5 md:p-6 mb-5 md:mb-6">
+        <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4 md:mb-5">{t("seating.addTable")}</p>
+        <div className="grid sm:grid-cols-2 gap-4 md:gap-5 mb-4 md:mb-5">
           <div>
             <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Table name" : "Názov stolu"}</label>
-            <input value={newTable.name} onChange={e => setNewTable({ ...newTable, name: e.target.value })} onKeyPress={e => e.key === 'Enter' && addTable()} placeholder={lang === "en" ? "e.g. Bride's family" : "Napr. Rodina nevesty"} className="w-full border-b hairline py-2 bg-transparent" />
+            <input value={newTable.name} onChange={e => setNewTable({ ...newTable, name: e.target.value })} onKeyPress={e => e.key === 'Enter' && addTable()} placeholder={lang === "en" ? "e.g. Bride's family" : "Napr. Rodina nevesty"} className="w-full border-b hairline py-2 bg-transparent text-sm md:text-base" />
           </div>
           <div>
             <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === "en" ? "Number of seats" : "Počet miest"}</label>
-            <input type="number" min="1" max="30" value={newTable.capacity} onChange={e => setNewTable({ ...newTable, capacity: e.target.value })} className="w-full border-b hairline py-2 bg-transparent" />
+            <input type="number" min="1" max="30" value={newTable.capacity} onChange={e => setNewTable({ ...newTable, capacity: e.target.value })} className="w-full border-b hairline py-2 bg-transparent text-sm md:text-base" />
           </div>
         </div>
-        <div className="mb-5">
-          <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">Tvar stolu</label>
+        <div className="mb-4 md:mb-5">
+          <label className="text-[10px] tracking-[0.2em] uppercase gold mb-2 block">{lang === 'en' ? 'Table shape' : 'Tvar stolu'}</label>
           <div className="pill-group">
             <button className={`pill-btn ${(newTable.shape === 'Okrúhly' || newTable.shape === 'Round') ? 'active' : ''}`} onClick={() => setNewTable({ ...newTable, shape: lang === 'en' ? 'Round' : 'Okrúhly' })}><Circle size={11} style={{ marginRight: 6 }} />{lang === 'en' ? 'Round' : 'Okrúhly'}</button>
             <button className={`pill-btn ${(newTable.shape === 'Rovný' || newTable.shape === 'Square') ? 'active' : ''}`} onClick={() => setNewTable({ ...newTable, shape: lang === 'en' ? 'Square' : 'Rovný' })}><Square size={11} style={{ marginRight: 6 }} />{lang === 'en' ? 'Square' : 'Rovný'}</button>
           </div>
         </div>
-        <button onClick={addTable} className="border border-gold gold px-6 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition flex items-center gap-2"><Plus size={14} /> {t("seating.addTable")}</button>
+        <button onClick={addTable} className="w-full sm:w-auto border border-gold gold px-6 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase hover:bg-gold hover:text-white transition flex items-center gap-2 justify-center"><Plus size={14} /> {t("seating.addTable")}</button>
       </div>
 
       {tables.length > 0 && (
-        <div className="bg-white border hairline rounded-card p-6 mb-6">
+        <div className="bg-white border hairline rounded-card p-5 md:p-6 mb-5 md:mb-6">
           <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4 flex items-center gap-2"><Layers size={12} />{lang === "en" ? "Add hall elements" : "Pridať prvky sály"}</p>
           <div className="flex flex-wrap gap-2">
             {sceneTypes.map(s => {
@@ -4102,7 +4160,7 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
 
       {/* UNASSIGNED GUESTS with fixed-positioned dropdown */}
       {unassignedGuests.length > 0 && (
-        <div className="bg-white border hairline rounded-card p-6 mb-6">
+        <div className="bg-white border hairline rounded-card p-5 md:p-6 mb-5 md:mb-6">
           <p className="text-[10px] tracking-[0.3em] uppercase gold mb-4">{lang === "en" ? "Unassigned guests" : "Nezaradení hostia"} ({unassignedGuests.length})</p>
           {tables.length === 0 ? (
             <p className="text-sm italic" style={{ color: '#6B5946' }}>{lang === "en" ? "First add at least one table, then you can assign guests." : "Najprv pridajte aspoň jeden stôl, potom môžete hostí priradiť."}</p>
@@ -4298,7 +4356,7 @@ function SeatingModule({ guests, tables, newTable, setNewTable, addTable, remove
                 const tableGuests = guests.filter(g => t.seats.includes(g.id));
                 const isFull = tableGuests.length >= t.capacity;
                 return (
-                  <div key={t.id} className="card-hover rounded-card bg-white border hairline p-6 group"
+                  <div key={t.id} className="card-hover rounded-card bg-white border hairline p-5 md:p-6 group"
                     onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`); e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`); }}>
                     <div className="relative z-10">
                       <div className="flex items-start justify-between mb-3">
@@ -4497,7 +4555,7 @@ function CustomDatePicker({ value, onChange, placeholder, lang = 'sk' }) {
         {value ? formatDate(value) : placeholder}
       </button>
       {open && (
-        <div className="absolute left-1/2 -translate-x-1/2 mt-3 bg-white border hairline rounded-card shadow-2xl z-50 p-5 w-[320px]"
+        <div className="absolute left-1/2 -translate-x-1/2 mt-3 bg-white border hairline rounded-card shadow-2xl z-50 p-4 md:p-5 w-[min(92vw,320px)]"
           style={{ animation: 'fadeIn 0.25s ease', boxShadow: '0 20px 40px -10px rgba(44, 36, 22, 0.2), 0 0 0 1px rgba(176, 141, 87, 0.1)' }}>
           <div className="flex items-center justify-between mb-4">
             <button type="button" onClick={() => setViewDate(new Date(year, month - 1, 1))} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#F5EFE3] transition"><ChevronLeft size={16} className="gold" /></button>
@@ -4572,12 +4630,12 @@ function ElegantSelect({ value, onChange, options, compact }) {
 function ModuleShell({ title, subtitle, onBack, children, lang = 'sk' }) {
   return (
     <div className="fade-in lg:ml-64">
-      <div className="max-w-5xl mx-auto px-6 py-12">
-        <button onClick={onBack} className="text-xs tracking-[0.2em] uppercase gold hover:opacity-60 mb-6 flex items-center gap-2 transition lg:hidden"><Home size={12} /> {lang === 'en' ? 'Back to overview' : 'Späť na prehľad'}</button>
-        <div className="mb-12 pb-6 border-b hairline">
-          <div className="h-px w-12 bg-gold mb-5" />
-          <h1 className="serif text-4xl md:text-5xl font-normal mb-3" style={{ color: '#1E1910' }}>{title}</h1>
-          <p className="serif italic text-lg" style={{ color: '#6B5946' }}>{subtitle}</p>
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-12">
+        <button onClick={onBack} className="text-[10px] md:text-xs tracking-[0.2em] uppercase gold hover:opacity-60 mb-5 md:mb-6 flex items-center gap-2 transition lg:hidden"><Home size={12} /> {lang === 'en' ? 'Back to overview' : 'Späť na prehľad'}</button>
+        <div className="mb-8 md:mb-12 pb-5 md:pb-6 border-b hairline">
+          <div className="h-px w-12 bg-gold mb-4 md:mb-5" />
+          <h1 className="serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal mb-2 md:mb-3" style={{ color: '#1E1910' }}>{title}</h1>
+          <p className="serif italic text-sm md:text-base lg:text-lg" style={{ color: '#6B5946' }}>{subtitle}</p>
         </div>
         {children}
       </div>
@@ -4589,7 +4647,7 @@ function StatCard({ label, value, accent, editable, onChange }) {
   const [editing, setEditing] = useState(false);
   const [temp, setTemp] = useState(value);
   return (
-    <div className="card-hover rounded-card bg-white border hairline p-6"
+    <div className="card-hover rounded-card bg-white border hairline p-5 md:p-6"
       onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`); e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`); }}>
       <div className="relative z-10">
         <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">{label}</p>
@@ -4799,7 +4857,7 @@ function StyleQuizModal({ onClose, lang = 'sk' }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" style={{ backgroundColor: 'rgba(44, 36, 22, 0.5)', backdropFilter: 'blur(6px)' }} onClick={onClose}>
-      <div className="bg-white rounded-card max-w-2xl w-full p-8 md:p-10 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-card max-w-2xl w-full p-5 md:p-8 lg:p-10 modal-content max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <div>
             <p className="text-[10px] tracking-[0.3em] uppercase gold mb-2">{lang === "en" ? "Style Quiz" : "Štýlový kvíz"}</p>
@@ -4813,11 +4871,11 @@ function StyleQuizModal({ onClose, lang = 'sk' }) {
         {step < questions.length ? (
           <>
             {/* Progress */}
-            <div className="h-1 bg-gray-100 rounded-full overflow-hidden mb-8">
+            <div className="h-1 bg-gray-100 rounded-full overflow-hidden mb-6 md:mb-8">
               <div className="progress-bar h-full bg-gold rounded-full" style={{ width: `${((step + 1) / questions.length) * 100}%` }} />
             </div>
 
-            <h3 className="serif text-3xl font-normal mb-8 text-center" style={{ color: '#1E1910' }}>
+            <h3 className="serif text-xl md:text-3xl font-normal mb-6 md:mb-8 text-center" style={{ color: '#1E1910' }}>
               {questions[step].q}
             </h3>
 
@@ -4826,18 +4884,18 @@ function StyleQuizModal({ onClose, lang = 'sk' }) {
                 <button
                   key={opt.val}
                   onClick={() => handleAnswer(questions[step].id, opt)}
-                  className="text-left border hairline rounded-soft p-5 hover:border-gold hover:bg-[#F5EFE3] transition-all duration-300 group"
+                  className="text-left border hairline rounded-soft p-4 md:p-5 hover:border-gold hover:bg-[#F5EFE3] transition-all duration-300 group"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="serif text-lg" style={{ color: '#1E1910' }}>{opt.label}</span>
-                    <ArrowRight size={16} className="gold opacity-0 group-hover:opacity-100 transition" />
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="serif text-base md:text-lg" style={{ color: '#1E1910' }}>{opt.label}</span>
+                    <ArrowRight size={16} className="gold opacity-0 group-hover:opacity-100 transition flex-shrink-0" />
                   </div>
                 </button>
               ))}
             </div>
 
             {step > 0 && (
-              <button onClick={() => setStep(step - 1)} className="text-xs tracking-wider uppercase gold hover:opacity-60 mt-6 flex items-center gap-2">
+              <button onClick={() => setStep(step - 1)} className="text-xs tracking-wider uppercase gold hover:opacity-60 mt-5 md:mt-6 flex items-center gap-2">
                 <ChevronLeft size={14} /> {lang === "en" ? "Back" : "Späť"}
               </button>
             )}
@@ -4847,21 +4905,21 @@ function StyleQuizModal({ onClose, lang = 'sk' }) {
           <div className="text-center fade-in">
             <SparklesIcon size={28} strokeWidth={1.2} className="gold mx-auto mb-4" />
             <p className="text-[10px] tracking-[0.3em] uppercase gold mb-3">{lang === "en" ? "Your style is" : "Váš štýl je"}</p>
-            <h3 className="serif text-4xl font-normal mb-5" style={{ color: '#1E1910' }}>
+            <h3 className="serif text-2xl md:text-4xl font-normal mb-4 md:mb-5" style={{ color: '#1E1910' }}>
               <em>{result?.name}</em>
             </h3>
-            <p className="text-sm leading-relaxed mb-6 max-w-md mx-auto" style={{ color: '#4A3F2E' }}>
+            <p className="text-xs md:text-sm leading-relaxed mb-5 md:mb-6 max-w-md mx-auto" style={{ color: '#4A3F2E' }}>
               {result?.desc}
             </p>
-            <div className="bg-gradient-to-br from-[#F5EFE3] to-[#EBE1CF] rounded-card p-6 mb-6">
+            <div className="bg-gradient-to-br from-[#F5EFE3] to-[#EBE1CF] rounded-card p-5 md:p-6 mb-5 md:mb-6">
               <p className="text-[10px] tracking-[0.25em] uppercase gold mb-2">{lang === "en" ? "We recommend" : "Odporúčame vám"}</p>
-              <p className="serif italic text-lg mb-4" style={{ color: '#1E1910' }}>{result?.dress}</p>
+              <p className="serif italic text-base md:text-lg mb-4" style={{ color: '#1E1910' }}>{result?.dress}</p>
 
               {/* Link na konkrétnu kolekciu */}
               {result?.collectionUrl && (
                 <div className="pt-4 border-t hairline">
                   <p className="text-[10px] tracking-[0.25em] uppercase gold mb-2">{lang === 'en' ? 'Matching collection' : 'Vaša kolekcia'}</p>
-                  <p className="serif text-2xl italic mb-3" style={{ color: '#9B7A45' }}>{result.collectionName}</p>
+                  <p className="serif text-xl md:text-2xl italic mb-3" style={{ color: '#9B7A45' }}>{result.collectionName}</p>
                   <a
                     href={result.collectionUrl}
                     target="_blank"
